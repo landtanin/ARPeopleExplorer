@@ -1,5 +1,7 @@
 package com.landtanin.arpersonexplorer.fragment;
 
+import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,12 +11,21 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.landtanin.arpersonexplorer.R;
+import com.landtanin.arpersonexplorer.databinding.FragmentMainBinding;
+
+import java.io.File;
+
+import pl.aprilapps.easyphotopicker.DefaultCallback;
+import pl.aprilapps.easyphotopicker.EasyImage;
 
 
 /**
  * Created by landtanin on 5/1/2017 AD.
  */
 public class MainFragment extends Fragment {
+
+    FragmentMainBinding b;
+    MainFragment mainFragment = this;
 
     // constructor of Fragment must be Default constructor (has no arguments)
     public MainFragment() {
@@ -48,9 +59,9 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 //        In case of using binding tool
-//        b = DataBindingUtil.inflate(inflater, R.layout.fragment_habit_frequency, container, false);
-//        View rootView = b.getRoot();
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        b = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
+        View rootView = b.getRoot();
+//        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         initInstances(rootView, savedInstanceState);
         return rootView;
     }
@@ -65,6 +76,37 @@ public class MainFragment extends Fragment {
         // Init 'View' instance(s) with rootView.findViewById here
         // Note: State of variable initialized here could not be saved
         //       in onSavedInstanceState
+
+        b.pickImgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                String a = "";
+                EasyImage.openChooserWithGallery(mainFragment, "Camera or Gallery", 0);
+
+            }
+        });
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        EasyImage.handleActivityResult(requestCode, resultCode, data, getActivity(), new DefaultCallback() {
+            @Override
+            public void onImagePicked(File imageFile, EasyImage.ImageSource source, int type) {
+
+//                Image image =
+//                Toast.makeText(getContext(), imageFile.toString(), Toast.LENGTH_SHORT).show();
+//                b.faceImgView.set
+
+                File imageFile1 = imageFile;
+
+
+            }
+        });
+
     }
 
     @Override
