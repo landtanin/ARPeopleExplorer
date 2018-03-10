@@ -2,6 +2,8 @@ package com.landtanin.arpersonexplorer.fragment;
 
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +14,7 @@ import android.view.ViewGroup;
 
 import com.landtanin.arpersonexplorer.R;
 import com.landtanin.arpersonexplorer.databinding.FragmentMainBinding;
+import com.landtanin.arpersonexplorer.facetracking.FaceActivity;
 
 import java.io.File;
 
@@ -87,6 +90,17 @@ public class MainFragment extends Fragment {
             }
         });
 
+        b.liveCamBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent objIntent = new Intent(getContext(), FaceActivity.class);
+//                objIntent.putExtra("key", data);
+                startActivity(objIntent);
+
+            }
+        });
+
     }
 
     @Override
@@ -97,12 +111,13 @@ public class MainFragment extends Fragment {
             @Override
             public void onImagePicked(File imageFile, EasyImage.ImageSource source, int type) {
 
-//                Image image =
-//                Toast.makeText(getContext(), imageFile.toString(), Toast.LENGTH_SHORT).show();
-//                b.faceImgView.set
+                if(imageFile.exists()){
 
-                File imageFile1 = imageFile;
+                    Bitmap myBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 
+                    b.faceImgView.setImageBitmap(myBitmap);
+
+                }
 
             }
         });
