@@ -46,10 +46,13 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -100,6 +103,7 @@ public final class FaceActivity extends AppCompatActivity {
 
     private Runnable uploadPhotoToServerRunnable;
     private Handler handler = new Handler();
+    private CardView hiddenPanel;
 
     // Activity event handlers
     // =======================
@@ -147,25 +151,9 @@ public final class FaceActivity extends AppCompatActivity {
         };
         timer.schedule(task, 0, 10000); //it executes this every 1000ms
 
-//        uploadPhotoToServerRunnable = new Runnable() {
-//            @Override
-//            public void run() {
-//
-//                new ServerConnectBgTask().execute();
-//                handler.postDelayed(this, 20000);
-//
-//            }
-//        };
-//
-//        handler.postDelayed(uploadPhotoToServerRunnable, 20000);
-//        Thread serverConnectThread = new Thread(uploadPhotoToServerRunnable);
-//        try {
-//
-//            serverConnectThread.start();
-//
-//        } catch (Exception e) {
-//            Log.w(TAG, "onCreate: ", e);
-//        }
+
+        hiddenPanel = (CardView) findViewById(R.id.userDetailCardView);
+        hiddenPanel.setVisibility(View.GONE);
 
     }
 
@@ -187,14 +175,36 @@ public final class FaceActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
-            // TODO: capture image and show it to the previewImg
-            Context context = getApplicationContext();
-            final FaceDetector faceDetector = createFaceDetector(context);
+            if (hiddenPanel.getVisibility()==View.GONE) {
+                Animation bottomUp = AnimationUtils.loadAnimation(getBaseContext(),
+                        R.anim.bottom_up);
+                hiddenPanel.startAnimation(bottomUp);
+                hiddenPanel.setVisibility(View.VISIBLE);
+            }
 
-            takePhotoFromCameraSource();
+//            mCameraSource.takePicture(null, pictureCallback);
+
+//            // TODO: capture image and show it to the previewImg
+//            Context context = getApplicationContext();
+//            final FaceDetector faceDetector = createFaceDetector(context);
+//
+//            takePhotoFromCameraSource();
 
         }
     };
+
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+
+        if (hiddenPanel.getVisibility()==View.VISIBLE) {
+            Animation bottomDown = AnimationUtils.loadAnimation(getBaseContext(),
+                    R.anim.bottom_down);
+            hiddenPanel.startAnimation(bottomDown);
+            hiddenPanel.setVisibility(View.GONE);
+        }
+
+    }
 
     private Bitmap takePhotoFromCameraSource() {
 
