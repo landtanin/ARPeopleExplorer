@@ -31,6 +31,7 @@ package com.landtanin.arpersonexplorer.facetracking;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.util.Log;
 
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
@@ -75,9 +76,8 @@ class FaceTracker extends Tracker<Face> {
   public void onNewItem(int id, Face face) {
     // Called when a new Face is detected and its tracking begins.
     // You’re using it to create a new instance of FaceGraphic,
+    Log.d(TAG, "onNewItem: new face");
     mFaceGraphic = new FaceGraphic(mOverlay, mContext, mIsFrontFacing);
-
-//    Toast.makeText(mContext, "New face", Toast.LENGTH_SHORT).show();
 
   }
 
@@ -85,8 +85,11 @@ class FaceTracker extends Tracker<Face> {
   @Override
   public void onUpdate(FaceDetector.Detections<Face> detectionResults, Face face) {
     // Called when some property (position, angle, or state) of a tracked face changes.
+    Log.d(TAG, "onUpdate: ");
     mOverlay.add(mFaceGraphic);
     mFaceGraphic.update(face);
+
+
   }
 
   // 3
@@ -95,6 +98,7 @@ class FaceTracker extends Tracker<Face> {
   // Both remove the FaceGraphic instance from the overlay.
   @Override
   public void onMissing(FaceDetector.Detections<Face> detectionResults) {
+    Log.d(TAG, "onMissing: ");
     mOverlay.remove(mFaceGraphic);
   }
 

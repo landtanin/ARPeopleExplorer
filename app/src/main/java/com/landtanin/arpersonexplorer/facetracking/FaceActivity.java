@@ -39,6 +39,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -46,7 +47,10 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
+import android.view.Surface;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -68,281 +72,278 @@ import java.io.IOException;
 import java.util.Date;
 
 
-public final class FaceActivity extends AppCompatActivity {
+public final class FaceActivity extends AppCompatActivity implements CameraSource.PictureCallback {
 
-  private static final String TAG = "FaceActivity";
+    private static final String TAG = "FaceActivity";
 
-  private static final int RC_HANDLE_GMS = 9001;
-  // permission request codes need to be < 256
-  private static final int RC_HANDLE_CAMERA_PERM = 255;
+    private static final int RC_HANDLE_GMS = 9001;
+    // permission request codes need to be < 256
+    private static final int RC_HANDLE_CAMERA_PERM = 255;
 
-  private CameraSource mCameraSource = null;
-  private CameraSourcePreview mPreview;
-  private GraphicOverlay mGraphicOverlay;
-  private boolean mIsFrontFacing = true;
-  private ImageView previewImg;
+    private CameraSource mCameraSource = null;
+    private CameraSourcePreview mPreview;
+    private GraphicOverlay mGraphicOverlay;
+    private boolean mIsFrontFacing = true;
+    private ImageView previewImg;
 
-  // Activity event handlers
-  // =======================
+    private FaceActivity activity = this;
 
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    Log.d(TAG, "onCreate called.");
+    // Activity event handlers
+    // =======================
 
-    setContentView(R.layout.activity_face);
-
-    mPreview = (CameraSourcePreview) findViewById(R.id.preview);
-    mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
-    final ImageButton button = (ImageButton) findViewById(R.id.flipButton);
-//    final Button captureBtn = findViewById(R.id.captureBtn);
-
-//    previewImg = findViewById(R.id.previewImage);
-    button.setOnClickListener(mSwitchCameraButtonListener);
-//    captureBtn.setOnClickListener(mCaptureButtonListener);
-
-    if (savedInstanceState != null) {
-      mIsFrontFacing = savedInstanceState.getBoolean("IsFrontFacing");
-    }
-
-    // Start using the camera if permission has been granted to this app,
-    // otherwise ask for permission to use it.
-    int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-    if (rc == PackageManager.PERMISSION_GRANTED) {
-      createCameraSource();
-    } else {
-      requestCameraPermission();
-    }
-  }
-
-  private View.OnClickListener mSwitchCameraButtonListener = new View.OnClickListener() {
-    public void onClick(View v) {
-      mIsFrontFacing = !mIsFrontFacing;
-
-      if (mCameraSource != null) {
-        mCameraSource.release();
-        mCameraSource = null;
-      }
-
-      createCameraSource();
-      startCameraSource();
-    }
-  };
-
-  private View.OnClickListener mCaptureButtonListener = new View.OnClickListener() {
     @Override
-    public void onClick(View v) {
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate called.");
 
-//      // TODO: capture image and show it to the previewImg
-//      Context context = getApplicationContext();
-//      FaceDetector faceDetector = createFaceDetector(context);
+        setContentView(R.layout.activity_face);
 
-      // crop current photo on the screen
-//      File imageFile = takeScreenshot();
-//      if (imageFile == null) {
-//        return;
-//      }
-//
-//      Uri uri = Uri.fromFile(imageFile);
-//      Bitmap bitmap = null;
-//      try {
-//        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-//      } catch (IOException e) {
-//        e.printStackTrace();
-//      }
-//
-//      previewImg.setImageBitmap(bitmap);
-      // put it in Bitmap format
+        mPreview = (CameraSourcePreview) findViewById(R.id.preview);
+        mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
+        final ImageButton button = (ImageButton) findViewById(R.id.flipButton);
+        final Button captureBtn = findViewById(R.id.captureBtn);
 
-      // put it in frame
+        previewImg = findViewById(R.id.previewImage);
+        button.setOnClickListener(mSwitchCameraButtonListener);
+        captureBtn.setOnClickListener(mCaptureButtonListener);
 
-      // use faceDetector to detect it
+        if (savedInstanceState != null) {
+            mIsFrontFacing = savedInstanceState.getBoolean("IsFrontFacing");
+        }
 
-//      SparseArray<Face> detectedFaces = faceDetector.detect(faceDetector.frame);
-//      for(int i=0;i<detectedFaces.size();i++){          //can't use for-each loops for SparseArrays
-//        Face face = detectedFaces.valueAt(i);
-//        //get it's coordinates
-//        Bitmap faceBitmap = Bitmap.createBitmap(bitmap, (int) face.getPosition().x, (int) face.getPosition().y, (int) face.getWidth(), (int) face.getHeight());
-//        //Do whatever you want with this cropped Bitmap
-//      }
-
-
-
-//      Resources r = getResources();
-//      int heightInPx = Math.round(TypedValue.applyDimension(
-//              TypedValue.COMPLEX_UNIT_DIP, 100,r.getDisplayMetrics()));
-//
-//      int widthInPx = Math.round(TypedValue.applyDimension(
-//              TypedValue.COMPLEX_UNIT_DIP, 80,r.getDisplayMetrics()));
-//
-////      BitmapFactory.Options options = new BitmapFactory.Options();
-////      options.inMutable=true;
-//      Bitmap myBitmap = Bitmap.createBitmap(heightInPx, widthInPx, Bitmap.Config.RGB_565);
-//
-//      Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
-//      SparseArray<Face> faces = faceDetector.detect(frame);
-
-//      faceDetector.croppedBitMap
-
-//      Frame frame = new Frame.Builder().set
-//      ByteBuffer buf = faceDetector.detect().getGrayscaleImageData();
-//
-//      byte[] imageBytes= new byte[buf.remaining()];
-//      buf.get(imageBytes);
-//      final Bitmap bmp= BitmapFactory.decodeByteArray(imageBytes,0,imageBytes.length);
-
-
-
+        // Start using the camera if permission has been granted to this app,
+        // otherwise ask for permission to use it.
+        int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        if (rc == PackageManager.PERMISSION_GRANTED) {
+            createCameraSource();
+        } else {
+            requestCameraPermission();
+        }
     }
-  };
+
+    private View.OnClickListener mSwitchCameraButtonListener = new View.OnClickListener() {
+        public void onClick(View v) {
+            mIsFrontFacing = !mIsFrontFacing;
+
+            if (mCameraSource != null) {
+                mCameraSource.release();
+                mCameraSource = null;
+            }
+
+            createCameraSource();
+            startCameraSource();
+        }
+    };
+
+    private View.OnClickListener mCaptureButtonListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+
+            // TODO: capture image and show it to the previewImg
+            Context context = getApplicationContext();
+            final FaceDetector faceDetector = createFaceDetector(context);
+
+            // crop current photo on the screen
+            CameraSource.PictureCallback pictureCallback = new CameraSource.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] bytes) {
+
+                    Display display = getWindowManager().getDefaultDisplay();
+                    int rotation = 0;
+                    switch (display.getRotation()) {
+                        case Surface.ROTATION_0: // This is display orientation
+                            rotation = 90;
+                            break;
+                        case Surface.ROTATION_90:
+                            rotation = 0;
+                            break;
+                        case Surface.ROTATION_180:
+                            rotation = 270;
+                            break;
+                        case Surface.ROTATION_270:
+                            rotation = 180;
+                            break;
+                    }
+
+                    Bitmap bitmap = BitmapTools.toBitmap(bytes);
+                    bitmap = BitmapTools.rotate(bitmap, rotation);
+
+                    previewImg.setImageBitmap(bitmap);
+                    // put it in Bitmap format
+
+                    // TODO crop each image
+//                    Bitmap tempBitmap = Bitmap.createBitmap(faceBitmap[0].getWidth(), faceBitmap[0].getHeight(), Bitmap.Config.RGB_565);
+//                    Canvas tempCanvas = new Canvas(tempBitmap);
+//                    tempCanvas.drawBitmap(faceBitmap[0], 0, 0, null);
+//
+//
+//                    // detect faces, create a Frame from Bitmap, call FaceDetector.detect() to get back a SparseArray of Face objects
+//                    Frame frame = new Frame.Builder().setBitmap(faceBitmap[0]).build();
+//                    SparseArray<Face> faces = faceDetector.detect(frame);
+//
+//                    // draw rectangles on the faces, we need coordinates of the top left and bottom right
+//                    for(int i=0; i<faces.size(); i++) {
+//
+//                        Face face = faces.valueAt(i);
+//
+//                        Bitmap eachFaceBitmap = Bitmap.createBitmap(faceBitmap[0], (int) face.getPosition().x, (int) face.getPosition().y, (int) face.getWidth(), (int) face.getHeight());
+//
+//                        previewImg.setImageBitmap(eachFaceBitmap);
+//                        break;
+//                    }
+                }
+            };
+            mCameraSource.takePicture(null, pictureCallback);
+
+
+        }
+    };
 
 
 
-  private File takeScreenshot() {
-    Date now = new Date();
-    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+    private File takeScreenshot() {
+        Date now = new Date();
+        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
 
-    try {
-      // image naming and path  to include sd card  appending name you choose for file
-      String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+        try {
+            // image naming and path  to include sd card  appending name you choose for file
+            String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
 
-      // create bitmap screen capture
-      View v1 = getWindow().getDecorView().getRootView();
-      v1.setDrawingCacheEnabled(true);
-      Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-      v1.setDrawingCacheEnabled(false);
+            // create bitmap screen capture
+            View v1 = getWindow().getDecorView().getRootView();
+            v1.setDrawingCacheEnabled(true);
+            Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+            v1.setDrawingCacheEnabled(false);
 
-      File imageFile = new File(mPath);
+            File imageFile = new File(mPath);
 
-      FileOutputStream outputStream = new FileOutputStream(imageFile);
-      int quality = 100;
-      bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
-      outputStream.flush();
-      outputStream.close();
+            FileOutputStream outputStream = new FileOutputStream(imageFile);
+            int quality = 100;
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+            outputStream.flush();
+            outputStream.close();
 
 //      openScreenshot(imageFile);
-      return imageFile;
-    } catch (Throwable e) {
-      // Several error may come out with file handling or DOM
-      e.printStackTrace();
-    }
-    return null;
-  }
-
-
-  @Override
-  protected void onResume() {
-    super.onResume();
-    Log.d(TAG, "onResume called.");
-
-    startCameraSource();
-  }
-
-  @Override
-  protected void onPause() {
-    super.onPause();
-
-    mPreview.stop();
-  }
-
-  @Override
-  public void onSaveInstanceState(Bundle savedInstanceState) {
-    super.onSaveInstanceState(savedInstanceState);
-    savedInstanceState.putBoolean("IsFrontFacing", mIsFrontFacing);
-  }
-
-  @Override
-  protected void onDestroy() {
-    super.onDestroy();
-
-    if (mCameraSource != null) {
-      mCameraSource.release();
-    }
-  }
-
-  // Handle camera permission requests
-  // =================================
-
-  private void requestCameraPermission() {
-    Log.w(TAG, "Camera permission not acquired. Requesting permission.");
-
-    final String[] permissions = new String[]{Manifest.permission.CAMERA};
-    if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
-      Manifest.permission.CAMERA)) {
-      ActivityCompat.requestPermissions(this, permissions, RC_HANDLE_CAMERA_PERM);
-      return;
+            return imageFile;
+        } catch (Throwable e) {
+            // Several error may come out with file handling or DOM
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    final Activity thisActivity = this;
-    View.OnClickListener listener = new View.OnClickListener() {
-      @Override
-      public void onClick(View view) {
-        ActivityCompat.requestPermissions(thisActivity, permissions, RC_HANDLE_CAMERA_PERM);
-      }
-    };
-    Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
-      Snackbar.LENGTH_INDEFINITE)
-      .setAction(R.string.ok, listener)
-      .show();
-  }
 
-  @Override
-  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                         @NonNull int[] grantResults) {
-    if (requestCode != RC_HANDLE_CAMERA_PERM) {
-      Log.d(TAG, "Got unexpected permission result: " + requestCode);
-      super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-      return;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume called.");
+
+        startCameraSource();
     }
 
-    if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-      // We have permission to access the camera, so create the camera source.
-      Log.d(TAG, "Camera permission granted - initializing camera source.");
-      createCameraSource();
-      return;
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        mPreview.stop();
     }
 
-    // If we've reached this part of the method, it means that the user hasn't granted the app
-    // access to the camera. Notify the user and exit.
-    Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
-      " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
-    DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int id) {
-        finish();
-      }
-    };
-    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-    builder.setTitle(R.string.app_name)
-      .setMessage(R.string.no_camera_permission)
-      .setPositiveButton(R.string.disappointed_ok, listener)
-      .show();
-  }
-
-  // Camera source
-  // =============
-
-  private void createCameraSource() {
-    Log.d(TAG, "createCameraSource called.");
-
-    // 1
-    Context context = getApplicationContext();
-    FaceDetector detector = createFaceDetector(context);
-
-    // 2
-    int facing = CameraSource.CAMERA_FACING_FRONT;
-    if (!mIsFrontFacing) {
-      facing = CameraSource.CAMERA_FACING_BACK;
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putBoolean("IsFrontFacing", mIsFrontFacing);
     }
 
-    // 3
-    mCameraSource = new CameraSource.Builder(context, detector)
-      .setFacing(facing)
-      .setRequestedPreviewSize(320, 240)
-      .setRequestedFps(60.0f)   // Sets the camera frame rate. Higher rates mean better face tracking, but use more processor power.
-      .setAutoFocusEnabled(true)
-      .build();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
+        if (mCameraSource != null) {
+            mCameraSource.release();
+        }
+    }
 
+    // Handle camera permission requests
+    // =================================
+
+    private void requestCameraPermission() {
+        Log.w(TAG, "Camera permission not acquired. Requesting permission.");
+
+        final String[] permissions = new String[]{Manifest.permission.CAMERA};
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.CAMERA)) {
+            ActivityCompat.requestPermissions(this, permissions, RC_HANDLE_CAMERA_PERM);
+            return;
+        }
+
+        final Activity thisActivity = this;
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ActivityCompat.requestPermissions(thisActivity, permissions, RC_HANDLE_CAMERA_PERM);
+            }
+        };
+        Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
+                Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.ok, listener)
+                .show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        if (requestCode != RC_HANDLE_CAMERA_PERM) {
+            Log.d(TAG, "Got unexpected permission result: " + requestCode);
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            return;
+        }
+
+        if (grantResults.length != 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // We have permission to access the camera, so create the camera source.
+            Log.d(TAG, "Camera permission granted - initializing camera source.");
+            createCameraSource();
+            return;
+        }
+
+        // If we've reached this part of the method, it means that the user hasn't granted the app
+        // access to the camera. Notify the user and exit.
+        Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
+                " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finish();
+            }
+        };
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.app_name)
+                .setMessage(R.string.no_camera_permission)
+                .setPositiveButton(R.string.disappointed_ok, listener)
+                .show();
+    }
+
+    // Camera source
+    // =============
+
+    private void createCameraSource() {
+        Log.d(TAG, "createCameraSource called.");
+
+        // 1
+        Context context = getApplicationContext();
+        FaceDetector detector = createFaceDetector(context);
+
+        // 2
+        int facing = CameraSource.CAMERA_FACING_FRONT;
+        if (!mIsFrontFacing) {
+            facing = CameraSource.CAMERA_FACING_BACK;
+        }
+
+        // 3
+        mCameraSource = new CameraSource.Builder(context, detector)
+                .setFacing(facing)
+                .setRequestedPreviewSize(320, 240)
+                .setRequestedFps(60.0f)   // Sets the camera frame rate. Higher rates mean better face tracking, but use more processor power.
+                .setAutoFocusEnabled(true)
+                .build();
 
 
 //    ByteBuffer mPendingFrameData = detector.frame.getGrayscaleImageData();
@@ -383,92 +384,104 @@ public final class FaceActivity extends AppCompatActivity {
 //
 //    previewImg.setImageBitmap(bitmap);
 
-  }
-
-  private void startCameraSource() {
-    Log.d(TAG, "startCameraSource called.");
-
-    // Make sure that the device has Google Play services available.
-    int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-      getApplicationContext());
-    if (code != ConnectionResult.SUCCESS) {
-      Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
-      dlg.show();
     }
 
-    if (mCameraSource != null) {
-      try {
-        mPreview.start(mCameraSource, mGraphicOverlay);
-      } catch (IOException e) {
-        Log.e(TAG, "Unable to start camera source.", e);
-        mCameraSource.release();
-        mCameraSource = null;
-      }
+    private void startCameraSource() {
+        Log.d(TAG, "startCameraSource called.");
+
+        // Make sure that the device has Google Play services available.
+        int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                getApplicationContext());
+        if (code != ConnectionResult.SUCCESS) {
+            Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
+            dlg.show();
+        }
+
+        if (mCameraSource != null) {
+            try {
+                mPreview.start(mCameraSource, mGraphicOverlay);
+            } catch (IOException e) {
+                Log.e(TAG, "Unable to start camera source.", e);
+                mCameraSource.release();
+                mCameraSource = null;
+            }
+        }
     }
-  }
 
-  // Face detector
-  // =============
+    // Face detector
+    // =============
 
-  /**
-   *  Create the face detector, and check if it's ready for use.
-   */
-  @NonNull
-  private FaceDetector createFaceDetector(final Context context) {
-    Log.d(TAG, "createFaceDetector called.");
+    /**
+     * Create the face detector, and check if it's ready for use.
+     */
+    @NonNull
+    private FaceDetector createFaceDetector(final Context context) {
+        Log.d(TAG, "createFaceDetector called.");
 
-    // 1
-    FaceDetector detector = new FaceDetector.Builder(context)
-            .setLandmarkType(FaceDetector.ALL_LANDMARKS)
-            .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
-            // Set to NO_CLASSIFICATIONS if it should not detect whether subjects’ eyes are open
-            // or closed or if they’re smiling (which speeds up face detection)
-            .setTrackingEnabled(true)
-            .setMode(FaceDetector.FAST_MODE)
-            // Set to FAST_MODE to detect fewer faces (but more quickly),
-            // or ACCURATE_MODE to detect more faces (but more slowly)
-            // and to detect the Euler Y angles of faces
-            .setProminentFaceOnly(mIsFrontFacing)
-            .setMinFaceSize(mIsFrontFacing ? 0.35f : 0.15f)
-            .build();
+        // 1
+        FaceDetector detector = new FaceDetector.Builder(context)
+                .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+                .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+                // Set to NO_CLASSIFICATIONS if it should not detect whether subjects’ eyes are open
+                // or closed or if they’re smiling (which speeds up face detection)
+                .setTrackingEnabled(true)
+                .setMode(FaceDetector.FAST_MODE)
+                // Set to FAST_MODE to detect fewer faces (but more quickly),
+                // or ACCURATE_MODE to detect more faces (but more slowly)
+                // and to detect the Euler Y angles of faces
+                .setProminentFaceOnly(mIsFrontFacing)
+                .setMinFaceSize(mIsFrontFacing ? 0.35f : 0.15f)
+                .build();
 
-    // 2
-    MultiProcessor.Factory<Face> factory = new MultiProcessor.Factory<Face>() {
-      @Override
-      public Tracker<Face> create(Face face) {
-        return new FaceTracker(mGraphicOverlay, context, mIsFrontFacing);
-      }
-    };
-
-    // 3
-    Detector.Processor<Face> processor = new MultiProcessor.Builder<>(factory).build();
-    detector.setProcessor(processor);
-
-    // 4
-    if (!detector.isOperational()) {
-      Log.w(TAG, "Face detector dependencies are not yet available.");
-
-      // Check the device's storage.  If there's little available storage, the native
-      // face detection library will not be downloaded, and the app won't work,
-      // so notify the user.
-      IntentFilter lowStorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
-      boolean hasLowStorage = registerReceiver(null, lowStorageFilter) != null;
-
-      if (hasLowStorage) {
-        Log.w(TAG, getString(R.string.low_storage_error));
-        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-          public void onClick(DialogInterface dialog, int id) {
-            finish();
-          }
+        // 2
+        MultiProcessor.Factory<Face> factory = new MultiProcessor.Factory<Face>() {
+            @Override
+            public Tracker<Face> create(Face face) {
+                return new FaceTracker(mGraphicOverlay, context, mIsFrontFacing);
+            }
         };
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.app_name)
-                .setMessage(R.string.low_storage_error)
-                .setPositiveButton(R.string.disappointed_ok, listener)
-                .show();
-      }
+
+        // 3
+        Detector.Processor<Face> processor = new MultiProcessor.Builder<>(factory).build();
+        detector.setProcessor(processor);
+
+        // 4
+        if (!detector.isOperational()) {
+            Log.w(TAG, "Face detector dependencies are not yet available.");
+
+            // Check the device's storage.  If there's little available storage, the native
+            // face detection library will not be downloaded, and the app won't work,
+            // so notify the user.
+            IntentFilter lowStorageFilter = new IntentFilter(Intent.ACTION_DEVICE_STORAGE_LOW);
+            boolean hasLowStorage = registerReceiver(null, lowStorageFilter) != null;
+
+            if (hasLowStorage) {
+                Log.w(TAG, getString(R.string.low_storage_error));
+                DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        finish();
+                    }
+                };
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle(R.string.app_name)
+                        .setMessage(R.string.low_storage_error)
+                        .setPositiveButton(R.string.disappointed_ok, listener)
+                        .show();
+            }
+        }
+        return detector;
     }
-    return detector;
-  }
+
+    @Override
+    public void onPictureTaken(byte[] bytes) {
+
+        Bitmap picture = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        previewImg.setImageBitmap(picture);
+
+    }
+
+
+
 
 }
+
