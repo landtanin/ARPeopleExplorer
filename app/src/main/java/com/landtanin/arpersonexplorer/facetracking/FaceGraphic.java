@@ -66,6 +66,8 @@ class FaceGraphic extends GraphicOverlay.Graphic {
     private Drawable mHappyStarGraphic;
     private Drawable mHatGraphic;
 
+    private EyePhysics mLeftPhysics = new EyePhysics();
+    private EyePhysics mRightPhysics = new EyePhysics();
 
     FaceGraphic(GraphicOverlay overlay, Context context, boolean isFrontFacing) {
         super(overlay);
@@ -222,8 +224,13 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         float irisRadius = IRIS_RADIUS_PROPORTION * distance;
 
         // Draw the eyes.
-        drawEye(canvas, leftEyePosition, eyeRadius, leftEyePosition, irisRadius, leftEyeOpen, smiling);
-        drawEye(canvas, rightEyePosition, eyeRadius, rightEyePosition, irisRadius, rightEyeOpen, smiling);
+//        drawEye(canvas, leftEyePosition, eyeRadius, leftEyePosition, irisRadius, leftEyeOpen, smiling);
+//        drawEye(canvas, rightEyePosition, eyeRadius, rightEyePosition, irisRadius, rightEyeOpen, smiling);
+        // Draw moving eyes.
+        PointF leftIrisPosition = mLeftPhysics.nextIrisPosition(leftEyePosition, eyeRadius, irisRadius);
+        drawEye(canvas, leftEyePosition, eyeRadius, leftIrisPosition, irisRadius, leftEyeOpen, smiling);
+        PointF rightIrisPosition = mRightPhysics.nextIrisPosition(rightEyePosition, eyeRadius, irisRadius);
+        drawEye(canvas, rightEyePosition, eyeRadius, rightIrisPosition, irisRadius, rightEyeOpen, smiling);
 
         // Draw the nose.
         drawNose(canvas, noseBasePosition, leftEyePosition, rightEyePosition, width);
