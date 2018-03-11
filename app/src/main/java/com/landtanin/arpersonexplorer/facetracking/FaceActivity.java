@@ -175,7 +175,7 @@ public final class FaceActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
-            if (hiddenPanel.getVisibility()==View.GONE) {
+            if (hiddenPanel.getVisibility() == View.GONE) {
                 Animation bottomUp = AnimationUtils.loadAnimation(getBaseContext(),
                         R.anim.bottom_up);
                 hiddenPanel.startAnimation(bottomUp);
@@ -195,13 +195,14 @@ public final class FaceActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-//        super.onBackPressed();
 
-        if (hiddenPanel.getVisibility()==View.VISIBLE) {
+        if (hiddenPanel.getVisibility() == View.VISIBLE) {
             Animation bottomDown = AnimationUtils.loadAnimation(getBaseContext(),
                     R.anim.bottom_down);
             hiddenPanel.startAnimation(bottomDown);
             hiddenPanel.setVisibility(View.GONE);
+        } else {
+            super.onBackPressed();
         }
 
     }
