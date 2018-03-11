@@ -27,9 +27,11 @@
             android:id="@+id/flipButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
             android:src="@drawable/switch_cameras"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!--<ImageView-->
         <!--android:id="@+id/previewImage"-->
@@ -43,15 +45,15 @@
         <!--app:layout_constraintStart_toStartOf="parent"-->
         <!--app:srcCompat="@drawable/happy_star" />-->
 
-        <Button
-            android:id="@+id/captureBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="capture"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+        <!--<Button-->
+            <!--android:id="@+id/captureBtn"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginBottom="8dp"-->
+            <!--android:layout_marginEnd="8dp"-->
+            <!--android:text="capture"-->
+            <!--app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--app:layout_constraintEnd_toEndOf="parent" />-->
 
         <android.support.v7.widget.CardView
             android:id="@+id/userDetailCardView"
@@ -104,28 +106,32 @@
 
                 <ImageButton
                     android:id="@+id/wwwBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_marginTop="8dp"
                     app:layout_constraintStart_toStartOf="@+id/bioTxt"
                     app:layout_constraintTop_toBottomOf="@+id/bioTxt"
-                    app:srcCompat="@android:drawable/btn_star" />
+                    app:srcCompat="@drawable/ic_action_globe"
+                    />
 
                 <ImageButton
                     android:id="@+id/twitterbtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     app:layout_constraintStart_toEndOf="@+id/wwwBtn"
                     app:layout_constraintTop_toTopOf="@+id/wwwBtn"
-                    app:srcCompat="@android:drawable/btn_star" />
+                    app:srcCompat="@drawable/ic_action_twitter" />
 
                 <ImageButton
                     android:id="@+id/linkedinBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     app:layout_constraintStart_toEndOf="@+id/twitterbtn"
                     app:layout_constraintTop_toTopOf="@+id/twitterbtn"
-                    app:srcCompat="@android:drawable/btn_star" />
+                    app:srcCompat="@drawable/ic_action_linkedin" />
 
                 <ImageView
                     android:id="@+id/userRetrievedFace"

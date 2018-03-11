@@ -40,7 +40,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -56,7 +55,6 @@ import android.view.Surface;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -80,8 +78,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -112,6 +108,7 @@ public final class FaceActivity extends AppCompatActivity {
     private CardView hiddenPanel;
 
     private ActivityFaceBinding binding;
+    private FaceGraphic.UpdateHat updateHatGraphic;
 
     // Activity event handlers
     // =======================
@@ -126,11 +123,11 @@ public final class FaceActivity extends AppCompatActivity {
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
         final ImageButton button = (ImageButton) findViewById(R.id.flipButton);
-        final Button captureBtn = findViewById(R.id.captureBtn);
+//        final Button captureBtn = findViewById(R.id.captureBtn);
 
 //        previewImg = findViewById(R.id.previewImage);
         button.setOnClickListener(mSwitchCameraButtonListener);
-        captureBtn.setOnClickListener(mCaptureButtonListener);
+//        captureBtn.setOnClickListener(mCaptureButtonListener);
         binding.cardCollapseBtn.setOnClickListener(mHideCardListener);
 
         if (savedInstanceState != null) {
@@ -180,22 +177,22 @@ public final class FaceActivity extends AppCompatActivity {
         }
     };
 
-    private View.OnClickListener mCaptureButtonListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-
-            showDetailCard();
-
-//            mCameraSource.takePicture(null, pictureCallback);
-
-//            // TODO: capture image and show it to the previewImg
-//            Context context = getApplicationContext();
-//            final FaceDetector faceDetector = createFaceDetector(context);
+//    private View.OnClickListener mCaptureButtonListener = new View.OnClickListener() {
+//        @Override
+//        public void onClick(View v) {
 //
-//            takePhotoFromCameraSource();
-
-        }
-    };
+//            showDetailCard();
+//
+////            mCameraSource.takePicture(null, pictureCallback);
+//
+////            // TODO: capture image and show it to the previewImg
+////            Context context = getApplicationContext();
+////            final FaceDetector faceDetector = createFaceDetector(context);
+////
+////            takePhotoFromCameraSource();
+//
+//        }
+//    };
 
     private View.OnClickListener mHideCardListener = new View.OnClickListener() {
         @Override
@@ -689,8 +686,9 @@ public final class FaceActivity extends AppCompatActivity {
                         String websiteUrl = "";
                         String linkedinUrl = "";
                         String faceUrl = "";
+                        String slackTeamStr = "";
 
-                        if (baseModel.getFaces().size()>0) {
+                        if (baseModel.getFaces().size() > 0) {
                             if (baseModel.getFaces().get(0).getMetaData().getName() != null) {
                                 nameStr = baseModel.getFaces().get(0).getMetaData().getName();
                             }
@@ -701,7 +699,7 @@ public final class FaceActivity extends AppCompatActivity {
                             if (baseModel.getFaces().get(0).getMetaData().getTwitter() != null) {
                                 twiiterUrl = baseModel.getFaces().get(0).getMetaData().getTwitter();
                             }
-                            if (baseModel.getFaces().get(0).getMetaData().getWebsite()!=null) {
+                            if (baseModel.getFaces().get(0).getMetaData().getWebsite() != null) {
                                 websiteUrl = baseModel.getFaces().get(0).getMetaData().getWebsite();
                             }
                             if (baseModel.getFaces().get(0).getMetaData().getLinkedin() != null) {
@@ -710,6 +708,10 @@ public final class FaceActivity extends AppCompatActivity {
                             }
                             if (baseModel.getFaces().get(0).getMetaData().getFace() != null) {
                                 faceUrl = baseModel.getFaces().get(0).getMetaData().getFace();
+                            }
+
+                            if (baseModel.getFaces().get(0).getMetaData().getSlack() != null) {
+                                slackTeamStr = baseModel.getFaces().get(0).getMetaData().getSlack();
                             }
 
                             Log.d(TAG, "onResponse: faceUrl = " + faceUrl);
@@ -757,14 +759,25 @@ public final class FaceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                goToUrl(twiiterUrl);
+                Log.d(TAG, "onClick: twitterUrl = " + twiiterUrl);
+
+//                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(twiiterUrl));
+//                startActivity(browserIntent);
+
+//                final Intent intent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse(twiiterUrl));
+//                startActivity(intent);
+                updateHatGraphic.updateWizardHat(getResources());
 
             }
         });
         binding.wwwBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToUrl(websiteUrl);
+//                goToUrl(websiteUrl);
+                Log.d(TAG, "onClick: websiteUrl = " + websiteUrl);
+
+//                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(websiteUrl));
+//                startActivity(browserIntent);
 
             }
         });
@@ -772,28 +785,17 @@ public final class FaceActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                goToUrl(linkedinUrl);
+                Log.d(TAG, "onClick: linkedinUrl = " + linkedinUrl);
+
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(linkedinUrl));
+                startActivity(browserIntent);
 
             }
         });
 //        binding.userRetrievedFace.setImageDrawable(profileImage);
     }
 
-    private void goToUrl(String url) {
-        Uri uriUrl = Uri.parse(url);
-        Intent launchBrowser = new Intent(Intent.ACTION_VIEW, uriUrl);
-        startActivity(launchBrowser);
-    }
 
-    public Drawable LoadImageFromWebOperations(String url) {
-        try {
-            InputStream is = (InputStream) new URL(url).getContent();
-            Drawable d = Drawable.createFromStream(is, "src name");
-            return d;
-        } catch (Exception e) {
-            return null;
-        }
-    }
 
 }
 

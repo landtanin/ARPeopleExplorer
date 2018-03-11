@@ -40,7 +40,7 @@ import com.landtanin.arpersonexplorer.R;
 import com.landtanin.arpersonexplorer.ui.camera.GraphicOverlay;
 
 
-class FaceGraphic extends GraphicOverlay.Graphic {
+class FaceGraphic extends GraphicOverlay.Graphic implements FaceGraphic.UpdateHat {
 
     private static final String TAG = "FaceGraphic";
 
@@ -83,7 +83,7 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         mMustacheGraphic = resources.getDrawable(R.drawable.mustache);
         mHappyStarGraphic = resources.getDrawable(R.drawable.happy_star);
         mWatermelonGraphic = resources.getDrawable(R.drawable.technottingham_watermelon);
-        mHatGraphic = resources.getDrawable(R.drawable.red_hat);
+        mHatGraphic = resources.getDrawable(R.drawable.watermelon);
     }
 
     private void initializePaints(Resources resources) {
@@ -226,8 +226,8 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         float irisRadius = IRIS_RADIUS_PROPORTION * distance;
 
         // Draw the eyes.
-        drawEye(canvas, leftEyePosition, eyeRadius, leftEyePosition, irisRadius, leftEyeOpen, smiling);
-        drawEye(canvas, rightEyePosition, eyeRadius, rightEyePosition, irisRadius, rightEyeOpen, smiling);
+//        drawEye(canvas, leftEyePosition, eyeRadius, leftEyePosition, irisRadius, leftEyeOpen, smiling);
+//        drawEye(canvas, rightEyePosition, eyeRadius, rightEyePosition, irisRadius, rightEyeOpen, smiling);
         // Draw moving eyes.
 //        PointF leftIrisPosition = mLeftPhysics.nextIrisPosition(leftEyePosition, eyeRadius, irisRadius);
 //        drawEye(canvas, leftEyePosition, eyeRadius, leftIrisPosition, irisRadius, leftEyeOpen, smiling);
@@ -238,7 +238,36 @@ class FaceGraphic extends GraphicOverlay.Graphic {
 //        drawNose(canvas, noseBasePosition, leftEyePosition, rightEyePosition, width);
 
         // Draw the mustache.
-        drawMustache(canvas, noseBasePosition, mouthLeftPosition, mouthRightPosition);
+//        drawMustache(canvas, noseBasePosition, mouthLeftPosition, mouthRightPosition);
+
+        // Head tilt
+        float eulerY = mFaceData.getEulerY();
+        float eulerZ = mFaceData.getEulerZ();
+
+        // Draw the hat only if the subject's head is titled at a sufficiently jaunty angle.
+        final float HEAD_TILT_HAT_THRESHOLD = 0.0f;
+        if (Math.abs(eulerZ) > HEAD_TILT_HAT_THRESHOLD) {
+
+            drawHat(canvas, position, width, height, noseBasePosition);
+        }
+
+    }
+
+    private void drawHat(Canvas canvas, PointF facePosition, float faceWidth, float faceHeight, PointF noseBasePosition) {
+        final float HAT_FACE_WIDTH_RATIO = (float)(1.0 / 4.0);
+        final float HAT_FACE_HEIGHT_RATIO = (float)(1.0 / 6.0);
+        final float HAT_CENTER_Y_OFFSET_FACTOR = (float)(1.0 / 8.0);
+
+        float hatCenterY = facePosition.y + (faceHeight * HAT_CENTER_Y_OFFSET_FACTOR);
+        float hatWidth = faceWidth * HAT_FACE_WIDTH_RATIO;
+        float hatHeight = faceHeight * HAT_FACE_HEIGHT_RATIO;
+
+        int left = (int)(noseBasePosition.x - (hatWidth / 2));
+        int right = (int)(noseBasePosition.x + (hatWidth / 2));
+        int top = (int)(hatCenterY - (hatHeight / 2));
+        int bottom = (int)(hatCenterY + (hatHeight / 2));
+        mHatGraphic.setBounds(left - 100, top - 100, right + 100, bottom + 100);
+        mHatGraphic.draw(canvas);
     }
 
     private void drawEye(Canvas canvas,
@@ -304,6 +333,24 @@ class FaceGraphic extends GraphicOverlay.Graphic {
             mMustacheGraphic.setBounds(right, top, left, bottom);
         }
         mMustacheGraphic.draw(canvas);
+    }
+
+    @Override
+    public void updateWizardHat(Resources resources) {
+
+    }
+
+//    @Override
+//    public void updateWizardHat(Resources resources) {
+//
+//        mHatGraphic = resources.getDrawable(R.drawable.red_hat);
+//
+//    }
+
+    public interface UpdateHat {
+
+        void updateWizardHat(Resources resources);
+
     }
 
 }
