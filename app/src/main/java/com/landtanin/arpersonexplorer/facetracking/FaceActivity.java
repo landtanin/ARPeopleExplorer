@@ -74,6 +74,7 @@ import com.landtanin.arpersonexplorer.manager.HttpManager;
 import com.landtanin.arpersonexplorer.model.BaseModel;
 import com.landtanin.arpersonexplorer.ui.camera.CameraSourcePreview;
 import com.landtanin.arpersonexplorer.ui.camera.GraphicOverlay;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -157,7 +158,7 @@ public final class FaceActivity extends AppCompatActivity {
                 });
             }
         };
-        timer.schedule(task, 0, 10000); //it executes this every 1000ms
+        timer.schedule(task, 0, 5000); //it executes this every 1000ms
 
 
         hiddenPanel = (CardView) findViewById(R.id.userDetailCardView);
@@ -710,9 +711,20 @@ public final class FaceActivity extends AppCompatActivity {
                             if (baseModel.getFaces().get(0).getMetaData().getFace() != null) {
                                 faceUrl = baseModel.getFaces().get(0).getMetaData().getFace();
                             }
-                            Drawable profileImage = LoadImageFromWebOperations(faceUrl);
 
-                            setDetailCard(nameStr, bioStr, twiiterUrl, websiteUrl, linkedinUrl, profileImage);
+                            Log.d(TAG, "onResponse: faceUrl = " + faceUrl);
+
+//                            Drawable profileImage = LoadImageFromWebOperations(faceUrl);
+
+//                            Picasso.with(context)
+//                                    .load("http://ImageURL")
+//                                    .resize(width,height)
+//                                    .into(imageView );
+
+
+                            Picasso.get().load(faceUrl).noPlaceholder().into(binding.userRetrievedFace);
+
+                            setDetailCard(nameStr, bioStr, twiiterUrl, websiteUrl, linkedinUrl);
                             showDetailCard();
                         }
 
@@ -734,7 +746,10 @@ public final class FaceActivity extends AppCompatActivity {
 
     }
 
-    private void setDetailCard(String nameStr, String bioStr, final String twiiterUrl, final String websiteUrl, final String linkedinUrl, Drawable profileImage) {
+    private void setDetailCard(String nameStr, String bioStr,
+                               final String twiiterUrl,
+                               final String websiteUrl,
+                               final String linkedinUrl) {
 
         binding.nameTxt.setText(nameStr);
         binding.bioTxt.setText(bioStr);
@@ -761,7 +776,7 @@ public final class FaceActivity extends AppCompatActivity {
 
             }
         });
-        binding.userRetrievedFace.setImageDrawable(profileImage);
+//        binding.userRetrievedFace.setImageDrawable(profileImage);
     }
 
     private void goToUrl(String url) {
