@@ -67,7 +67,6 @@ import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
-import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 import com.landtanin.arpersonexplorer.R;
 import com.landtanin.arpersonexplorer.databinding.ActivityFaceBinding;
@@ -202,7 +201,7 @@ public final class FaceActivity extends AppCompatActivity {
         public void onClick(View v) {
             hideDetailCard();
         }
-    }
+    };
 
     private void showDetailCard() {
         if (hiddenPanel.getVisibility() == View.GONE) {
@@ -231,117 +230,117 @@ public final class FaceActivity extends AppCompatActivity {
         }
     }
 
-    private Bitmap takePhotoFromCameraSource() {
-
-        final Bitmap[] bitmap = new Bitmap[1];
-
-        // crop current photo on the screen
-        CameraSource.PictureCallback pictureCallback = new CameraSource.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] bytes) {
-
-                Display display = getWindowManager().getDefaultDisplay();
-                int rotation = 0;
-                switch (display.getRotation()) {
-                    case Surface.ROTATION_0: // This is display orientation
-                        rotation = 90;
-                        break;
-                    case Surface.ROTATION_90:
-                        rotation = 0;
-                        break;
-                    case Surface.ROTATION_180:
-                        rotation = 270;
-                        break;
-                    case Surface.ROTATION_270:
-                        rotation = 180;
-                        break;
-                }
-
-                bitmap[0] = BitmapTools.toBitmap(bytes);
-                bitmap[0] = BitmapTools.rotate(bitmap[0], rotation);
-
-                if (bitmap[0] != null) {
-
-                    // create a file to write bitmap data
-                    File file = new File(getBaseContext().getCacheDir(), "live_image");
-                    try {
-                        file.createNewFile();
-
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        bitmap[0].compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
-                        byte[] bitmapdata = bos.toByteArray();
-
-
-                        FileOutputStream fos = new FileOutputStream(file);
-                        fos.write(bitmapdata);
-                        fos.flush();
-                        fos.close();
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
-                    MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
-//                RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "upload_test");
-
-                    Call<BaseModel> baseModelCall = HttpManager.getInstance().getService().postImage(body);
-
-                    baseModelCall.enqueue(new Callback<BaseModel>() {
-                        @Override
-                        public void onResponse(Call<BaseModel> call, Response<BaseModel> response) {
-
-                            if (response.isSuccessful()) {
-
-                                BaseModel baseModel = response.body();
-                                Log.d(TAG, "onResponse: " + baseModel.toString());
-
-                                String nameStr = baseModel.getFuckingLongIdData().getMetaData().getNameSr();
-                                Toast.makeText(getApplicationContext(), nameStr, Toast.LENGTH_SHORT).show();
-
-                            }
-
-                        }
-
-                        @Override
-                        public void onFailure(Call<BaseModel> call, Throwable t) {
-                            Log.e(TAG, "onFailure: " + t.getMessage());
-                            Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
-                }
-
-//                previewImg.setImageBitmap(bitmap);
-                // put it in Bitmap format
-
-                // TODO crop each image
-//                    Bitmap tempBitmap = Bitmap.createBitmap(faceBitmap[0].getWidth(), faceBitmap[0].getHeight(), Bitmap.Config.RGB_565);
-//                    Canvas tempCanvas = new Canvas(tempBitmap);
-//                    tempCanvas.drawBitmap(faceBitmap[0], 0, 0, null);
+//    private Bitmap takePhotoFromCameraSource() {
 //
+//        final Bitmap[] bitmap = new Bitmap[1];
 //
-//                    // detect faces, create a Frame from Bitmap, call FaceDetector.detect() to get back a SparseArray of Face objects
-//                    Frame frame = new Frame.Builder().setBitmap(faceBitmap[0]).build();
-//                    SparseArray<Face> faces = faceDetector.detect(frame);
+//        // crop current photo on the screen
+//        CameraSource.PictureCallback pictureCallback = new CameraSource.PictureCallback() {
+//            @Override
+//            public void onPictureTaken(byte[] bytes) {
 //
-//                    // draw rectangles on the faces, we need coordinates of the top left and bottom right
-//                    for(int i=0; i<faces.size(); i++) {
-//
-//                        Face face = faces.valueAt(i);
-//
-//                        Bitmap eachFaceBitmap = Bitmap.createBitmap(faceBitmap[0], (int) face.getPosition().x, (int) face.getPosition().y, (int) face.getWidth(), (int) face.getHeight());
-//
-//                        previewImg.setImageBitmap(eachFaceBitmap);
+//                Display display = getWindowManager().getDefaultDisplay();
+//                int rotation = 0;
+//                switch (display.getRotation()) {
+//                    case Surface.ROTATION_0: // This is display orientation
+//                        rotation = 90;
 //                        break;
+//                    case Surface.ROTATION_90:
+//                        rotation = 0;
+//                        break;
+//                    case Surface.ROTATION_180:
+//                        rotation = 270;
+//                        break;
+//                    case Surface.ROTATION_270:
+//                        rotation = 180;
+//                        break;
+//                }
+//
+//                bitmap[0] = BitmapTools.toBitmap(bytes);
+//                bitmap[0] = BitmapTools.rotate(bitmap[0], rotation);
+//
+//                if (bitmap[0] != null) {
+//
+//                    // create a file to write bitmap data
+//                    File file = new File(getBaseContext().getCacheDir(), "live_image");
+//                    try {
+//                        file.createNewFile();
+//
+//                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//                        bitmap[0].compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
+//                        byte[] bitmapdata = bos.toByteArray();
+//
+//
+//                        FileOutputStream fos = new FileOutputStream(file);
+//                        fos.write(bitmapdata);
+//                        fos.flush();
+//                        fos.close();
+//
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
 //                    }
-            }
-        };
-        mCameraSource.takePicture(null, pictureCallback);
-
-        return bitmap[0];
-
-    }
+//
+//                    RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+//                    MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
+////                RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "upload_test");
+//
+//                    Call<BaseModel> baseModelCall = HttpManager.getInstance().getService().postImage(body);
+//
+//                    baseModelCall.enqueue(new Callback<BaseModel>() {
+//                        @Override
+//                        public void onResponse(Call<BaseModel> call, Response<BaseModel> response) {
+//
+//                            if (response.isSuccessful()) {
+//
+//                                BaseModel baseModel = response.body();
+//                                Log.d(TAG, "onResponse: " + baseModel.toString());
+//
+//                                String nameStr = baseModel.getFaces().getMetaData().getNameSr();
+//                                Toast.makeText(getApplicationContext(), nameStr, Toast.LENGTH_SHORT).show();
+//
+//                            }
+//
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Call<BaseModel> call, Throwable t) {
+//                            Log.e(TAG, "onFailure: " + t.getMessage());
+//                            Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+//                        }
+//                    });
+//
+//                }
+//
+////                previewImg.setImageBitmap(bitmap);
+//                // put it in Bitmap format
+//
+//                // TODO crop each image
+////                    Bitmap tempBitmap = Bitmap.createBitmap(faceBitmap[0].getWidth(), faceBitmap[0].getHeight(), Bitmap.Config.RGB_565);
+////                    Canvas tempCanvas = new Canvas(tempBitmap);
+////                    tempCanvas.drawBitmap(faceBitmap[0], 0, 0, null);
+////
+////
+////                    // detect faces, create a Frame from Bitmap, call FaceDetector.detect() to get back a SparseArray of Face objects
+////                    Frame frame = new Frame.Builder().setBitmap(faceBitmap[0]).build();
+////                    SparseArray<Face> faces = faceDetector.detect(frame);
+////
+////                    // draw rectangles on the faces, we need coordinates of the top left and bottom right
+////                    for(int i=0; i<faces.size(); i++) {
+////
+////                        Face face = faces.valueAt(i);
+////
+////                        Bitmap eachFaceBitmap = Bitmap.createBitmap(faceBitmap[0], (int) face.getPosition().x, (int) face.getPosition().y, (int) face.getWidth(), (int) face.getHeight());
+////
+////                        previewImg.setImageBitmap(eachFaceBitmap);
+////                        break;
+////                    }
+//            }
+//        };
+//        mCameraSource.takePicture(null, pictureCallback);
+//
+//        return bitmap[0];
+//
+//    }
 
     @Override
     protected void onResume() {
@@ -505,15 +504,15 @@ public final class FaceActivity extends AppCompatActivity {
                 .build();
 
         // 2
-        MultiProcessor.Factory<Face> factory = new MultiProcessor.Factory<Face>() {
+        MultiProcessor.Factory<com.google.android.gms.vision.face.Face> factory = new MultiProcessor.Factory<com.google.android.gms.vision.face.Face>() {
             @Override
-            public Tracker<Face> create(Face face) {
+            public Tracker<com.google.android.gms.vision.face.Face> create(com.google.android.gms.vision.face.Face face) {
                 return new FaceTracker(mGraphicOverlay, context, mIsFrontFacing);
             }
         };
 
         // 3
-        Detector.Processor<Face> processor = new MultiProcessor.Builder<>(factory).build();
+        Detector.Processor<com.google.android.gms.vision.face.Face> processor = new MultiProcessor.Builder<>(factory).build();
         detector.setProcessor(processor);
 
         // 4
@@ -625,6 +624,55 @@ public final class FaceActivity extends AppCompatActivity {
 
             Call<BaseModel> baseModelCall = HttpManager.getInstance().getService().postImage(body);
 
+//            baseModelCall.enqueue(new Callback<Face>() {
+//                @Override
+//                public void onResponse(Call<Face> call, Response<Face> response) {
+//                    if (response.isSuccessful()) {
+//
+//                        Face baseModel = response.body();
+//                        Log.d(TAG, "onResponse: " + baseModel.toString());
+//
+//                        String nameStr = "";
+//                        String bioStr = "";
+//                        String twiiterUrl = "";
+//                        String websiteUrl = "";
+//                        String linkedinUrl = "";
+//                        String faceUrl = "";
+//
+//                        if (baseModel.getMetaData().getName() != null) {
+//                            nameStr = baseModel.getMetaData().getName();
+//                        }
+//                        if (baseModel.getMetaData().getBio() != null) {
+//
+//                            bioStr = baseModel.getMetaData().getBio();
+//                        }
+//                        if (baseModel.getMetaData().getTwitter() != null) {
+//                            twiiterUrl = baseModel.getMetaData().getTwitter();
+//                        }
+//                        if (baseModel.getMetaData().getWebsite()!=null) {
+//                            websiteUrl = baseModel.getMetaData().getWebsite();
+//                        }
+//                        if (baseModel.getMetaData().getLinkedin() != null) {
+//
+//                            linkedinUrl = baseModel.getMetaData().getLinkedin();
+//                        }
+//                        if (baseModel.getMetaData().getFace() != null) {
+//                            faceUrl = baseModel.getMetaData().getFace();
+//                        }
+//                        Drawable profileImage = LoadImageFromWebOperations(faceUrl);
+//
+//                        setDetailCard(nameStr, bioStr, twiiterUrl, websiteUrl, linkedinUrl, profileImage);
+//                        showDetailCard();
+//
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<Face> call, Throwable t) {
+//
+//                }
+//            });
+
             baseModelCall.enqueue(new Callback<BaseModel>() {
                 @Override
                 public void onResponse(Call<BaseModel> call, Response<BaseModel> response) {
@@ -641,30 +689,33 @@ public final class FaceActivity extends AppCompatActivity {
                         String linkedinUrl = "";
                         String faceUrl = "";
 
-                        if (baseModel.getFuckingLongIdData().getMetaData().getNameSr() != null) {
-                            nameStr = baseModel.getFuckingLongIdData().getMetaData().getNameSr();
-                        }
-                        if (baseModel.getFuckingLongIdData().getMetaData().getBioSr() != null) {
+                        if (baseModel.getFaces().size()>0) {
+                            if (baseModel.getFaces().get(0).getMetaData().getName() != null) {
+                                nameStr = baseModel.getFaces().get(0).getMetaData().getName();
+                            }
+                            if (baseModel.getFaces().get(0).getMetaData().getBio() != null) {
 
-                            bioStr = baseModel.getFuckingLongIdData().getMetaData().getBioSr();
-                        }
-                        if (baseModel.getFuckingLongIdData().getMetaData().getTwitterSr() != null) {
-                            twiiterUrl = baseModel.getFuckingLongIdData().getMetaData().getTwitterSr();
-                        }
-                        if (baseModel.getFuckingLongIdData().getMetaData().getWebsiteSr()!=null) {
-                            websiteUrl = baseModel.getFuckingLongIdData().getMetaData().getWebsiteSr();
-                        }
-                        if (baseModel.getFuckingLongIdData().getMetaData().getLinkedinSr() != null) {
+                                bioStr = baseModel.getFaces().get(0).getMetaData().getBio();
+                            }
+                            if (baseModel.getFaces().get(0).getMetaData().getTwitter() != null) {
+                                twiiterUrl = baseModel.getFaces().get(0).getMetaData().getTwitter();
+                            }
+                            if (baseModel.getFaces().get(0).getMetaData().getWebsite()!=null) {
+                                websiteUrl = baseModel.getFaces().get(0).getMetaData().getWebsite();
+                            }
+                            if (baseModel.getFaces().get(0).getMetaData().getLinkedin() != null) {
 
-                            linkedinUrl = baseModel.getFuckingLongIdData().getMetaData().getLinkedinSr();
-                        }
-                        if (baseModel.getFuckingLongIdData().getMetaData().getFaceSr() != null) {
-                            faceUrl = baseModel.getFuckingLongIdData().getMetaData().getFaceSr();
-                        }
-                        Drawable profileImage = LoadImageFromWebOperations(faceUrl);
+                                linkedinUrl = baseModel.getFaces().get(0).getMetaData().getLinkedin();
+                            }
+                            if (baseModel.getFaces().get(0).getMetaData().getFace() != null) {
+                                faceUrl = baseModel.getFaces().get(0).getMetaData().getFace();
+                            }
+                            Drawable profileImage = LoadImageFromWebOperations(faceUrl);
 
-                        setDetailCard(nameStr, bioStr, twiiterUrl, websiteUrl, linkedinUrl, profileImage);
-                        showDetailCard();
+                            setDetailCard(nameStr, bioStr, twiiterUrl, websiteUrl, linkedinUrl, profileImage);
+                            showDetailCard();
+                        }
+
 
                     }
 

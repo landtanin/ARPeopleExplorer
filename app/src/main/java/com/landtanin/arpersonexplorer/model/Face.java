@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName;
  * Created by Tanin on 11/03/2018.
  */
 
-public class FuckingLongIdData {
+public class Face {
 
     @SerializedName("matched_face")
     @Expose

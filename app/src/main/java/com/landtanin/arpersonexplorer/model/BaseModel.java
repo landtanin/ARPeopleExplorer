@@ -3,21 +3,23 @@ package com.landtanin.arpersonexplorer.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 /**
  * Created by Tanin on 10/03/2018.
  */
 
 public class BaseModel {
 
-    @SerializedName("373357db-bda9-4257-8677-7ca2331a6449")
+    @SerializedName("faces")
     @Expose
-    private FuckingLongIdData fuckingLongIdData;
+    private List<Face> faces;
 
-    public FuckingLongIdData getFuckingLongIdData() {
-        return fuckingLongIdData;
+    public List<Face> getFaces() {
+        return faces;
     }
 
-    public void setFuckingLongIdData(FuckingLongIdData fuckingLongIdData) {
-        this.fuckingLongIdData = fuckingLongIdData;
+    public void setFaces(List<Face> faces) {
+        this.faces = faces;
     }
 }

@@ -11,79 +11,91 @@ public class MetaData {
 
     @SerializedName("id")
     @Expose
-    private String idStr;
+    private String id;
     @SerializedName("twitter")
     @Expose
-    private String twitterSr;
+    private String twitter;
     @SerializedName("face")
     @Expose
-    private String faceSr;
+    private String face;
     @SerializedName("name")
     @Expose
-    private String nameSr;
+    private String name;
     @SerializedName("website")
     @Expose
-    private String websiteSr;
+    private String website;
+    @SerializedName("slack")
+    @Expose
+    private String slack;
     @SerializedName("linkedin")
     @Expose
-    private String linkedinSr;
+    private String linkedin;
     @SerializedName("bio")
     @Expose
-    private String bioSr;
+    private String bio;
 
-    public String getIdStr() {
-        return idStr;
+    public String getId() {
+        return id;
     }
 
-    public void setIdStr(String idStr) {
-        this.idStr = idStr;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getTwitterSr() {
-        return twitterSr;
+    public String getTwitter() {
+        return twitter;
     }
 
-    public void setTwitterSr(String twitterSr) {
-        this.twitterSr = twitterSr;
+    public void setTwitter(String twitter) {
+        this.twitter = twitter;
     }
 
-    public String getFaceSr() {
-        return faceSr;
+    public String getFace() {
+        return face;
     }
 
-    public void setFaceSr(String faceSr) {
-        this.faceSr = faceSr;
+    public void setFace(String face) {
+        this.face = face;
     }
 
-    public String getNameSr() {
-        return nameSr;
+    public String getName() {
+        return name;
     }
 
-    public void setNameSr(String nameSr) {
-        this.nameSr = nameSr;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getWebsiteSr() {
-        return websiteSr;
+    public String getWebsite() {
+        return website;
     }
 
-    public void setWebsiteSr(String websiteSr) {
-        this.websiteSr = websiteSr;
+    public void setWebsite(String website) {
+        this.website = website;
     }
 
-    public String getLinkedinSr() {
-        return linkedinSr;
+    public String getSlack() {
+        return slack;
     }
 
-    public void setLinkedinSr(String linkedinSr) {
-        this.linkedinSr = linkedinSr;
+    public void setSlack(String slack) {
+        this.slack = slack;
     }
 
-    public String getBioSr() {
-        return bioSr;
+    public String getLinkedin() {
+        return linkedin;
     }
 
-    public void setBioSr(String bioSr) {
-        this.bioSr = bioSr;
+    public void setLinkedin(String linkedin) {
+        this.linkedin = linkedin;
     }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
 }
