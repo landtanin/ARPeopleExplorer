@@ -166,7 +166,6 @@ public class MainFragment extends Fragment {
 
                 if(imageFile.exists()){
 
-
                     faceBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
                     faceImgFile = imageFile;
 

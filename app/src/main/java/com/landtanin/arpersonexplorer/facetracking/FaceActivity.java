@@ -39,9 +39,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -53,6 +53,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -63,16 +64,25 @@ import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 import com.landtanin.arpersonexplorer.R;
+import com.landtanin.arpersonexplorer.manager.HttpManager;
+import com.landtanin.arpersonexplorer.model.BaseModel;
 import com.landtanin.arpersonexplorer.ui.camera.CameraSourcePreview;
 import com.landtanin.arpersonexplorer.ui.camera.GraphicOverlay;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
-public final class FaceActivity extends AppCompatActivity implements CameraSource.PictureCallback {
+public final class FaceActivity extends AppCompatActivity {
 
     private static final String TAG = "FaceActivity";
 
@@ -86,7 +96,8 @@ public final class FaceActivity extends AppCompatActivity implements CameraSourc
     private boolean mIsFrontFacing = true;
     private ImageView previewImg;
 
-    private FaceActivity activity = this;
+    private Runnable uploadPhotoToServerRunnable;
+    private Handler handler = new Handler();
 
     // Activity event handlers
     // =======================
@@ -119,6 +130,27 @@ public final class FaceActivity extends AppCompatActivity implements CameraSourc
         } else {
             requestCameraPermission();
         }
+
+//        uploadPhotoToServerRunnable = new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                new ServerConnectBgTask().execute();
+//                handler.postDelayed(this, 20000);
+//
+//            }
+//        };
+//
+//        handler.postDelayed(uploadPhotoToServerRunnable, 20000);
+//        Thread serverConnectThread = new Thread(uploadPhotoToServerRunnable);
+//        try {
+//
+//            serverConnectThread.start();
+//
+//        } catch (Exception e) {
+//            Log.w(TAG, "onCreate: ", e);
+//        }
+
     }
 
     private View.OnClickListener mSwitchCameraButtonListener = new View.OnClickListener() {
@@ -143,35 +175,96 @@ public final class FaceActivity extends AppCompatActivity implements CameraSourc
             Context context = getApplicationContext();
             final FaceDetector faceDetector = createFaceDetector(context);
 
-            // crop current photo on the screen
-            CameraSource.PictureCallback pictureCallback = new CameraSource.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] bytes) {
+            takePhotoFromCameraSource();
 
-                    Display display = getWindowManager().getDefaultDisplay();
-                    int rotation = 0;
-                    switch (display.getRotation()) {
-                        case Surface.ROTATION_0: // This is display orientation
-                            rotation = 90;
-                            break;
-                        case Surface.ROTATION_90:
-                            rotation = 0;
-                            break;
-                        case Surface.ROTATION_180:
-                            rotation = 270;
-                            break;
-                        case Surface.ROTATION_270:
-                            rotation = 180;
-                            break;
+        }
+    };
+
+    private Bitmap takePhotoFromCameraSource() {
+
+        final Bitmap[] bitmap = new Bitmap[1];
+
+        // crop current photo on the screen
+        CameraSource.PictureCallback pictureCallback = new CameraSource.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] bytes) {
+
+                Display display = getWindowManager().getDefaultDisplay();
+                int rotation = 0;
+                switch (display.getRotation()) {
+                    case Surface.ROTATION_0: // This is display orientation
+                        rotation = 90;
+                        break;
+                    case Surface.ROTATION_90:
+                        rotation = 0;
+                        break;
+                    case Surface.ROTATION_180:
+                        rotation = 270;
+                        break;
+                    case Surface.ROTATION_270:
+                        rotation = 180;
+                        break;
+                }
+
+                bitmap[0] = BitmapTools.toBitmap(bytes);
+                bitmap[0] = BitmapTools.rotate(bitmap[0], rotation);
+
+                if (bitmap[0] != null) {
+
+                    // create a file to write bitmap data
+                    File file = new File(getBaseContext().getCacheDir(), "live_image");
+                    try {
+                        file.createNewFile();
+
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        bitmap[0].compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
+                        byte[] bitmapdata = bos.toByteArray();
+
+
+                        FileOutputStream fos = new FileOutputStream(file);
+                        fos.write(bitmapdata);
+                        fos.flush();
+                        fos.close();
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
 
-                    Bitmap bitmap = BitmapTools.toBitmap(bytes);
-                    bitmap = BitmapTools.rotate(bitmap, rotation);
+                    RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+                    MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
+//                RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "upload_test");
 
-                    previewImg.setImageBitmap(bitmap);
-                    // put it in Bitmap format
+                    Call<BaseModel> baseModelCall = HttpManager.getInstance().getService().postImage(body);
 
-                    // TODO crop each image
+                    baseModelCall.enqueue(new Callback<BaseModel>() {
+                        @Override
+                        public void onResponse(Call<BaseModel> call, Response<BaseModel> response) {
+
+                            if (response.isSuccessful()) {
+
+                                BaseModel baseModel = response.body();
+                                Log.d(TAG, "onResponse: " + baseModel.toString());
+
+                                String nameStr = baseModel.getFuckingLongIdData().getMetaData().getNameSr();
+                                Toast.makeText(getApplicationContext(), nameStr, Toast.LENGTH_SHORT).show();
+
+                            }
+
+                        }
+
+                        @Override
+                        public void onFailure(Call<BaseModel> call, Throwable t) {
+                            Log.e(TAG, "onFailure: " + t.getMessage());
+                            Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                }
+
+//                previewImg.setImageBitmap(bitmap);
+                // put it in Bitmap format
+
+                // TODO crop each image
 //                    Bitmap tempBitmap = Bitmap.createBitmap(faceBitmap[0].getWidth(), faceBitmap[0].getHeight(), Bitmap.Config.RGB_565);
 //                    Canvas tempCanvas = new Canvas(tempBitmap);
 //                    tempCanvas.drawBitmap(faceBitmap[0], 0, 0, null);
@@ -191,47 +284,15 @@ public final class FaceActivity extends AppCompatActivity implements CameraSourc
 //                        previewImg.setImageBitmap(eachFaceBitmap);
 //                        break;
 //                    }
-                }
-            };
-            mCameraSource.takePicture(null, pictureCallback);
-
-
-        }
-    };
+            }
+        };
+        mCameraSource.takePicture(null, pictureCallback);
 
 
 
-    private File takeScreenshot() {
-        Date now = new Date();
-        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+        return bitmap[0];
 
-        try {
-            // image naming and path  to include sd card  appending name you choose for file
-            String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
-
-            // create bitmap screen capture
-            View v1 = getWindow().getDecorView().getRootView();
-            v1.setDrawingCacheEnabled(true);
-            Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
-            v1.setDrawingCacheEnabled(false);
-
-            File imageFile = new File(mPath);
-
-            FileOutputStream outputStream = new FileOutputStream(imageFile);
-            int quality = 100;
-            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
-            outputStream.flush();
-            outputStream.close();
-
-//      openScreenshot(imageFile);
-            return imageFile;
-        } catch (Throwable e) {
-            // Several error may come out with file handling or DOM
-            e.printStackTrace();
-        }
-        return null;
     }
-
 
     @Override
     protected void onResume() {
@@ -345,45 +406,6 @@ public final class FaceActivity extends AppCompatActivity implements CameraSourc
                 .setAutoFocusEnabled(true)
                 .build();
 
-
-//    ByteBuffer mPendingFrameData = detector.frame.getGrayscaleImageData();
-//
-//    Resources r = getResources();
-//    int heightInPx = Math.round(TypedValue.applyDimension(
-//              TypedValue.COMPLEX_UNIT_DIP, 100,r.getDisplayMetrics()));
-//
-//    int widthInPx = Math.round(TypedValue.applyDimension(
-//              TypedValue.COMPLEX_UNIT_DIP, 80,r.getDisplayMetrics()));
-//
-//    Frame outputFrame = new Frame.Builder()
-//            .setImageData(mPendingFrameData, widthInPx,
-//                    heightInPx, ImageFormat.NV21)
-//            .build();
-//
-//    int w = outputFrame.getMetadata().getWidth();
-//    int h = outputFrame.getMetadata().getHeight();
-//    SparseArray<Face> detectedFaces = detector.detect(outputFrame);
-//    Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-//
-//    if (detectedFaces.size() > 0) {
-//      ByteBuffer byteBufferRaw = outputFrame.getGrayscaleImageData();
-//      byte[] byteBuffer = byteBufferRaw.array();
-//      YuvImage yuvimage  = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
-//
-//      Face face = detectedFaces.valueAt(0);
-//      int left = (int) face.getPosition().x;
-//      int top = (int) face.getPosition().y;
-//      int right = (int) face.getWidth() + left;
-//      int bottom = (int) face.getHeight() + top;
-//
-//      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//      yuvimage.compressToJpeg(new Rect(left, top, right, bottom), 80, baos);
-//      byte[] jpegArray = baos.toByteArray();
-//      bitmap = BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.length);
-//    }
-//
-//    previewImg.setImageBitmap(bitmap);
-
     }
 
     private void startCameraSource() {
@@ -472,16 +494,34 @@ public final class FaceActivity extends AppCompatActivity implements CameraSourc
         return detector;
     }
 
-    @Override
-    public void onPictureTaken(byte[] bytes) {
+    // ----------- gRPC background thread -----------
+    public class ServerConnectBgTask extends AsyncTask<Void, Void, Bitmap> {
 
-        Bitmap picture = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        previewImg.setImageBitmap(picture);
+        private ServerConnectBgTask() {
 
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... nothing) {
+
+
+
+            return takePhotoFromCameraSource();
+
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+
+            previewImg.setImageBitmap(bitmap);
+
+        }
     }
-
-
-
 
 }
 
