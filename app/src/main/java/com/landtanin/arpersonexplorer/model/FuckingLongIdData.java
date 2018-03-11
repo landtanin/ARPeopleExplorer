@@ -19,4 +19,27 @@ public class FuckingLongIdData {
     @Expose
     private MetaData metaData;
 
+    public MatchedFaceData getMatchedFaceData() {
+        return matchedFaceData;
+    }
+
+    public void setMatchedFaceData(MatchedFaceData matchedFaceData) {
+        this.matchedFaceData = matchedFaceData;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public MetaData getMetaData() {
+        return metaData;
+    }
+
+    public void setMetaData(MetaData metaData) {
+        this.metaData = metaData;
+    }
 }

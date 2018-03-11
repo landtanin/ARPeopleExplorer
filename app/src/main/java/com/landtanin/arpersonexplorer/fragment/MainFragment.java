@@ -130,8 +130,17 @@ public class MainFragment extends Fragment {
                 baseModelCall.enqueue(new Callback<BaseModel>() {
                     @Override
                     public void onResponse(Call<BaseModel> call, Response<BaseModel> response) {
-                        Log.d(TAG, "onResponse: " + response.body().getFuckingLongIdData().toString());
-//                        Toast.makeText(getContext(), response.body().getFuckingLongIdData().toString(), Toast.LENGTH_SHORT).show();
+
+                        if (response.isSuccessful()) {
+
+                            BaseModel baseModel = response.body();
+                            Log.d(TAG, "onResponse: " + baseModel.toString());
+
+                            String nameStr = baseModel.getFuckingLongIdData().getMetaData().getNameSr();
+                            Toast.makeText(getContext(), nameStr, Toast.LENGTH_SHORT).show();
+
+                        }
+
                     }
 
                     @Override

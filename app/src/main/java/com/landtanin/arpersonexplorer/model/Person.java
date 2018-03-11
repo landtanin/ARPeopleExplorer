@@ -24,5 +24,35 @@ public class Person {
     @Expose
     private String userData;
 
+    public String getPersonIdStr() {
+        return personIdStr;
+    }
 
+    public void setPersonIdStr(String personIdStr) {
+        this.personIdStr = personIdStr;
+    }
+
+    public List<String> getPersistedFaceIdsStr() {
+        return persistedFaceIdsStr;
+    }
+
+    public void setPersistedFaceIdsStr(List<String> persistedFaceIdsStr) {
+        this.persistedFaceIdsStr = persistedFaceIdsStr;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getUserData() {
+        return userData;
+    }
+
+    public void setUserData(String userData) {
+        this.userData = userData;
+    }
 }

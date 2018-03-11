@@ -16,5 +16,19 @@ public class MatchedFaceData {
     @Expose
     private FaceRectangleData faceRectangleData;
 
+    public String getFaceIdStr() {
+        return faceIdStr;
+    }
 
+    public void setFaceIdStr(String faceIdStr) {
+        this.faceIdStr = faceIdStr;
+    }
+
+    public FaceRectangleData getFaceRectangleData() {
+        return faceRectangleData;
+    }
+
+    public void setFaceRectangleData(FaceRectangleData faceRectangleData) {
+        this.faceRectangleData = faceRectangleData;
+    }
 }
