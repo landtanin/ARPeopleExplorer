@@ -47,7 +47,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -96,11 +95,11 @@ public final class FaceActivity extends AppCompatActivity {
     mPreview = (CameraSourcePreview) findViewById(R.id.preview);
     mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
     final ImageButton button = (ImageButton) findViewById(R.id.flipButton);
-    final Button captureBtn = findViewById(R.id.captureBtn);
+//    final Button captureBtn = findViewById(R.id.captureBtn);
 
-    previewImg = findViewById(R.id.previewImage);
+//    previewImg = findViewById(R.id.previewImage);
     button.setOnClickListener(mSwitchCameraButtonListener);
-    captureBtn.setOnClickListener(mCaptureButtonListener);
+//    captureBtn.setOnClickListener(mCaptureButtonListener);
 
     if (savedInstanceState != null) {
       mIsFrontFacing = savedInstanceState.getBoolean("IsFrontFacing");
@@ -134,9 +133,9 @@ public final class FaceActivity extends AppCompatActivity {
     @Override
     public void onClick(View v) {
 
-      // TODO: capture image and show it to the previewImg
-      Context context = getApplicationContext();
-      MyFaceDetector faceDetector = createFaceDetector(context);
+//      // TODO: capture image and show it to the previewImg
+//      Context context = getApplicationContext();
+//      FaceDetector faceDetector = createFaceDetector(context);
 
       // crop current photo on the screen
 //      File imageFile = takeScreenshot();
@@ -327,7 +326,7 @@ public final class FaceActivity extends AppCompatActivity {
 
     // 1
     Context context = getApplicationContext();
-    MyFaceDetector detector = createFaceDetector(context);
+    FaceDetector detector = createFaceDetector(context);
 
     // 2
     int facing = CameraSource.CAMERA_FACING_FRONT;
@@ -415,25 +414,23 @@ public final class FaceActivity extends AppCompatActivity {
    *  Create the face detector, and check if it's ready for use.
    */
   @NonNull
-  private MyFaceDetector createFaceDetector(final Context context) {
+  private FaceDetector createFaceDetector(final Context context) {
     Log.d(TAG, "createFaceDetector called.");
 
     // 1
     FaceDetector detector = new FaceDetector.Builder(context)
-      .setLandmarkType(FaceDetector.ALL_LANDMARKS)
-      .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+            .setLandmarkType(FaceDetector.ALL_LANDMARKS)
+            .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
             // Set to NO_CLASSIFICATIONS if it should not detect whether subjects’ eyes are open
             // or closed or if they’re smiling (which speeds up face detection)
-      .setTrackingEnabled(true)
-      .setMode(FaceDetector.FAST_MODE)
+            .setTrackingEnabled(true)
+            .setMode(FaceDetector.FAST_MODE)
             // Set to FAST_MODE to detect fewer faces (but more quickly),
             // or ACCURATE_MODE to detect more faces (but more slowly)
             // and to detect the Euler Y angles of faces
-      .setProminentFaceOnly(mIsFrontFacing)
-      .setMinFaceSize(mIsFrontFacing ? 0.35f : 0.15f)
-      .build();
-
-    MyFaceDetector myFaceDetector = new MyFaceDetector(detector);
+            .setProminentFaceOnly(mIsFrontFacing)
+            .setMinFaceSize(mIsFrontFacing ? 0.35f : 0.15f)
+            .build();
 
     // 2
     MultiProcessor.Factory<Face> factory = new MultiProcessor.Factory<Face>() {
@@ -446,7 +443,6 @@ public final class FaceActivity extends AppCompatActivity {
     // 3
     Detector.Processor<Face> processor = new MultiProcessor.Builder<>(factory).build();
     detector.setProcessor(processor);
-    myFaceDetector.setProcessor(processor);
 
     // 4
     if (!detector.isOperational()) {
@@ -467,12 +463,12 @@ public final class FaceActivity extends AppCompatActivity {
         };
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.app_name)
-          .setMessage(R.string.low_storage_error)
-          .setPositiveButton(R.string.disappointed_ok, listener)
-          .show();
+                .setMessage(R.string.low_storage_error)
+                .setPositiveButton(R.string.disappointed_ok, listener)
+                .show();
       }
     }
-    return myFaceDetector;
+    return detector;
   }
 
 }

@@ -76,6 +76,9 @@ class FaceTracker extends Tracker<Face> {
     // Called when a new Face is detected and its tracking begins.
     // You’re using it to create a new instance of FaceGraphic,
     mFaceGraphic = new FaceGraphic(mOverlay, mContext, mIsFrontFacing);
+
+//    Toast.makeText(mContext, "New face", Toast.LENGTH_SHORT).show();
+
   }
 
   // 2
