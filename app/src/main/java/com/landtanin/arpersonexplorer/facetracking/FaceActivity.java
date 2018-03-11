@@ -73,6 +73,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -130,6 +132,20 @@ public final class FaceActivity extends AppCompatActivity {
         } else {
             requestCameraPermission();
         }
+
+        final Handler handler = new Handler();
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        mCameraSource.takePicture(null, pictureCallback);
+                    }
+                });
+            }
+        };
+        timer.schedule(task, 0, 10000); //it executes this every 1000ms
 
 //        uploadPhotoToServerRunnable = new Runnable() {
 //            @Override
@@ -287,8 +303,6 @@ public final class FaceActivity extends AppCompatActivity {
             }
         };
         mCameraSource.takePicture(null, pictureCallback);
-
-
 
         return bitmap[0];
 
@@ -494,33 +508,108 @@ public final class FaceActivity extends AppCompatActivity {
         return detector;
     }
 
+    // crop current photo on the screen
+    CameraSource.PictureCallback pictureCallback = new CameraSource.PictureCallback() {
+        @Override
+        public void onPictureTaken(byte[] bytes) {
+
+            Bitmap bitmap;
+
+            Display display = getWindowManager().getDefaultDisplay();
+            int rotation = 0;
+            switch (display.getRotation()) {
+                case Surface.ROTATION_0: // This is display orientation
+                    rotation = 90;
+                    break;
+                case Surface.ROTATION_90:
+                    rotation = 0;
+                    break;
+                case Surface.ROTATION_180:
+                    rotation = 270;
+                    break;
+                case Surface.ROTATION_270:
+                    rotation = 180;
+                    break;
+            }
+
+            bitmap = BitmapTools.toBitmap(bytes);
+            bitmap = BitmapTools.rotate(bitmap, rotation);
+
+            new ServerConnectBgTask(bitmap).execute();
+
+        }
+    };
+
     // ----------- gRPC background thread -----------
-    public class ServerConnectBgTask extends AsyncTask<Void, Void, Bitmap> {
+    public class ServerConnectBgTask extends AsyncTask<Void, Void, Void> {
 
-        private ServerConnectBgTask() {
+        private Bitmap bitmap;
 
+        private ServerConnectBgTask(Bitmap bitmap) {
+            this.bitmap = bitmap;
         }
 
         @Override
         protected void onPreExecute() {
 
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... nothing) {
-
-
-
-            return takePhotoFromCameraSource();
 
         }
 
         @Override
-        protected void onPostExecute(Bitmap bitmap) {
+        protected Void doInBackground(Void... nothing) {
 
-            previewImg.setImageBitmap(bitmap);
+            // create a file to write bitmap data
+            File file = new File(getBaseContext().getCacheDir(), "live_image");
+            try {
+                file.createNewFile();
 
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 0 /*ignored for PNG*/, bos);
+                byte[] bitmapdata = bos.toByteArray();
+
+
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(bitmapdata);
+                fos.flush();
+                fos.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
+//                RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "upload_test");
+
+            Call<BaseModel> baseModelCall = HttpManager.getInstance().getService().postImage(body);
+
+            baseModelCall.enqueue(new Callback<BaseModel>() {
+                @Override
+                public void onResponse(Call<BaseModel> call, Response<BaseModel> response) {
+
+                    if (response.isSuccessful()) {
+
+                        BaseModel baseModel = response.body();
+                        Log.d(TAG, "onResponse: " + baseModel.toString());
+
+                        String nameStr = baseModel.getFuckingLongIdData().getMetaData().getNameSr();
+                        Toast.makeText(getApplicationContext(), nameStr, Toast.LENGTH_SHORT).show();
+
+                    }
+
+                }
+
+                @Override
+                public void onFailure(Call<BaseModel> call, Throwable t) {
+                    Log.e(TAG, "onFailure: " + t.getMessage());
+                    Toast.makeText(getApplicationContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            return null;
         }
+
+
     }
 
 }

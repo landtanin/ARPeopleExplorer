@@ -9,7 +9,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class BaseModel {
 
-    @SerializedName("116ba9cb-7b89-489f-88e4-a71cc621de90")
+    @SerializedName("373357db-bda9-4257-8677-7ca2331a6449")
     @Expose
     private FuckingLongIdData fuckingLongIdData;
 
