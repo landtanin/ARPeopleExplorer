@@ -64,6 +64,7 @@ class FaceGraphic extends GraphicOverlay.Graphic {
     private Drawable mPigNoseGraphic;
     private Drawable mMustacheGraphic;
     private Drawable mHappyStarGraphic;
+    private Drawable mWatermelonGraphic;
     private Drawable mHatGraphic;
 
     private EyePhysics mLeftPhysics = new EyePhysics();
@@ -81,6 +82,7 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         mPigNoseGraphic = resources.getDrawable(R.drawable.pig_nose_emoji);
         mMustacheGraphic = resources.getDrawable(R.drawable.mustache);
         mHappyStarGraphic = resources.getDrawable(R.drawable.happy_star);
+        mWatermelonGraphic = resources.getDrawable(R.drawable.technottingham_watermelon);
         mHatGraphic = resources.getDrawable(R.drawable.red_hat);
     }
 
@@ -224,16 +226,16 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         float irisRadius = IRIS_RADIUS_PROPORTION * distance;
 
         // Draw the eyes.
-//        drawEye(canvas, leftEyePosition, eyeRadius, leftEyePosition, irisRadius, leftEyeOpen, smiling);
-//        drawEye(canvas, rightEyePosition, eyeRadius, rightEyePosition, irisRadius, rightEyeOpen, smiling);
+        drawEye(canvas, leftEyePosition, eyeRadius, leftEyePosition, irisRadius, leftEyeOpen, smiling);
+        drawEye(canvas, rightEyePosition, eyeRadius, rightEyePosition, irisRadius, rightEyeOpen, smiling);
         // Draw moving eyes.
-        PointF leftIrisPosition = mLeftPhysics.nextIrisPosition(leftEyePosition, eyeRadius, irisRadius);
-        drawEye(canvas, leftEyePosition, eyeRadius, leftIrisPosition, irisRadius, leftEyeOpen, smiling);
-        PointF rightIrisPosition = mRightPhysics.nextIrisPosition(rightEyePosition, eyeRadius, irisRadius);
-        drawEye(canvas, rightEyePosition, eyeRadius, rightIrisPosition, irisRadius, rightEyeOpen, smiling);
+//        PointF leftIrisPosition = mLeftPhysics.nextIrisPosition(leftEyePosition, eyeRadius, irisRadius);
+//        drawEye(canvas, leftEyePosition, eyeRadius, leftIrisPosition, irisRadius, leftEyeOpen, smiling);
+//        PointF rightIrisPosition = mRightPhysics.nextIrisPosition(rightEyePosition, eyeRadius, irisRadius);
+//        drawEye(canvas, rightEyePosition, eyeRadius, rightIrisPosition, irisRadius, rightEyeOpen, smiling);
 
         // Draw the nose.
-        drawNose(canvas, noseBasePosition, leftEyePosition, rightEyePosition, width);
+//        drawNose(canvas, noseBasePosition, leftEyePosition, rightEyePosition, width);
 
         // Draw the mustache.
         drawMustache(canvas, noseBasePosition, mouthLeftPosition, mouthRightPosition);
@@ -243,26 +245,34 @@ class FaceGraphic extends GraphicOverlay.Graphic {
                          PointF eyePosition, float eyeRadius,
                          PointF irisPosition, float irisRadius,
                          boolean eyeOpen, boolean smiling) {
-        if (eyeOpen) {
-            canvas.drawCircle(eyePosition.x, eyePosition.y, eyeRadius, mEyeWhitePaint);
-            if (smiling) {
-                mHappyStarGraphic.setBounds(
+//        if (eyeOpen) {
+//            canvas.drawCircle(eyePosition.x, eyePosition.y, eyeRadius, mEyeWhitePaint);
+//            if (smiling) {
+//                mHappyStarGraphic.setBounds(
+//                        (int) (irisPosition.x - irisRadius),
+//                        (int) (irisPosition.y - irisRadius),
+//                        (int) (irisPosition.x + irisRadius),
+//                        (int) (irisPosition.y + irisRadius));
+//                mHappyStarGraphic.draw(canvas);
+//            } else {
+//                canvas.drawCircle(irisPosition.x, irisPosition.y, irisRadius, mIrisPaint);
+//            }
+//        } else {
+//            canvas.drawCircle(eyePosition.x, eyePosition.y, eyeRadius, mEyelidPaint);
+//            float y = eyePosition.y;
+//            float start = eyePosition.x - eyeRadius;
+//            float end = eyePosition.x + eyeRadius;
+//            canvas.drawLine(start, y, end, y, mEyeOutlinePaint);
+//        }
+//        canvas.drawCircle(eyePosition.x, eyePosition.y, eyeRadius, mEyeOutlinePaint);
+
+
+        mWatermelonGraphic.setBounds(
                         (int) (irisPosition.x - irisRadius),
                         (int) (irisPosition.y - irisRadius),
                         (int) (irisPosition.x + irisRadius),
                         (int) (irisPosition.y + irisRadius));
-                mHappyStarGraphic.draw(canvas);
-            } else {
-                canvas.drawCircle(irisPosition.x, irisPosition.y, irisRadius, mIrisPaint);
-            }
-        } else {
-            canvas.drawCircle(eyePosition.x, eyePosition.y, eyeRadius, mEyelidPaint);
-            float y = eyePosition.y;
-            float start = eyePosition.x - eyeRadius;
-            float end = eyePosition.x + eyeRadius;
-            canvas.drawLine(start, y, end, y, mEyeOutlinePaint);
-        }
-        canvas.drawCircle(eyePosition.x, eyePosition.y, eyeRadius, mEyeOutlinePaint);
+        mWatermelonGraphic.draw(canvas);
     }
 
     private void drawNose(Canvas canvas,
