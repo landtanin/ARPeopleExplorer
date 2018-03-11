@@ -532,6 +532,13 @@ public final class FaceActivity extends AppCompatActivity {
                     break;
             }
 
+            if (mIsFrontFacing) {
+                rotation += 180;
+                if (rotation > 360) {
+                    rotation -= 360;
+                }
+            }
+
             bitmap = BitmapTools.toBitmap(bytes);
             bitmap = BitmapTools.rotate(bitmap, rotation);
 
