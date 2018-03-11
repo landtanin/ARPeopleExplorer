@@ -38,7 +38,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -67,6 +70,7 @@ import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 import com.landtanin.arpersonexplorer.R;
+import com.landtanin.arpersonexplorer.databinding.ActivityFaceBinding;
 import com.landtanin.arpersonexplorer.manager.HttpManager;
 import com.landtanin.arpersonexplorer.model.BaseModel;
 import com.landtanin.arpersonexplorer.ui.camera.CameraSourcePreview;
@@ -76,6 +80,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -105,6 +111,8 @@ public final class FaceActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private CardView hiddenPanel;
 
+    private ActivityFaceBinding binding;
+
     // Activity event handlers
     // =======================
 
@@ -113,16 +121,17 @@ public final class FaceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate called.");
 
-        setContentView(R.layout.activity_face);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_face);
 
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
         final ImageButton button = (ImageButton) findViewById(R.id.flipButton);
         final Button captureBtn = findViewById(R.id.captureBtn);
 
-        previewImg = findViewById(R.id.previewImage);
+//        previewImg = findViewById(R.id.previewImage);
         button.setOnClickListener(mSwitchCameraButtonListener);
         captureBtn.setOnClickListener(mCaptureButtonListener);
+        binding.cardCollapseBtn.setOnClickListener(mHideCardListener);
 
         if (savedInstanceState != null) {
             mIsFrontFacing = savedInstanceState.getBoolean("IsFrontFacing");
@@ -175,12 +184,7 @@ public final class FaceActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
 
-            if (hiddenPanel.getVisibility() == View.GONE) {
-                Animation bottomUp = AnimationUtils.loadAnimation(getBaseContext(),
-                        R.anim.bottom_up);
-                hiddenPanel.startAnimation(bottomUp);
-                hiddenPanel.setVisibility(View.VISIBLE);
-            }
+            showDetailCard();
 
 //            mCameraSource.takePicture(null, pictureCallback);
 
@@ -193,9 +197,30 @@ public final class FaceActivity extends AppCompatActivity {
         }
     };
 
+    private View.OnClickListener mHideCardListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            hideDetailCard();
+        }
+    }
+
+    private void showDetailCard() {
+        if (hiddenPanel.getVisibility() == View.GONE) {
+            Animation bottomUp = AnimationUtils.loadAnimation(getBaseContext(),
+                    R.anim.bottom_up);
+            hiddenPanel.startAnimation(bottomUp);
+            hiddenPanel.setVisibility(View.VISIBLE);
+        }
+    }
+
     @Override
     public void onBackPressed() {
 
+        hideDetailCard();
+
+    }
+
+    private void hideDetailCard() {
         if (hiddenPanel.getVisibility() == View.VISIBLE) {
             Animation bottomDown = AnimationUtils.loadAnimation(getBaseContext(),
                     R.anim.bottom_down);
@@ -204,7 +229,6 @@ public final class FaceActivity extends AppCompatActivity {
         } else {
             super.onBackPressed();
         }
-
     }
 
     private Bitmap takePhotoFromCameraSource() {
@@ -610,8 +634,37 @@ public final class FaceActivity extends AppCompatActivity {
                         BaseModel baseModel = response.body();
                         Log.d(TAG, "onResponse: " + baseModel.toString());
 
-                        String nameStr = baseModel.getFuckingLongIdData().getMetaData().getNameSr();
-                        Toast.makeText(getApplicationContext(), nameStr, Toast.LENGTH_SHORT).show();
+                        String nameStr = "";
+                        String bioStr = "";
+                        String twiiterUrl = "";
+                        String websiteUrl = "";
+                        String linkedinUrl = "";
+                        String faceUrl = "";
+
+                        if (baseModel.getFuckingLongIdData().getMetaData().getNameSr() != null) {
+                            nameStr = baseModel.getFuckingLongIdData().getMetaData().getNameSr();
+                        }
+                        if (baseModel.getFuckingLongIdData().getMetaData().getBioSr() != null) {
+
+                            bioStr = baseModel.getFuckingLongIdData().getMetaData().getBioSr();
+                        }
+                        if (baseModel.getFuckingLongIdData().getMetaData().getTwitterSr() != null) {
+                            twiiterUrl = baseModel.getFuckingLongIdData().getMetaData().getTwitterSr();
+                        }
+                        if (baseModel.getFuckingLongIdData().getMetaData().getWebsiteSr()!=null) {
+                            websiteUrl = baseModel.getFuckingLongIdData().getMetaData().getWebsiteSr();
+                        }
+                        if (baseModel.getFuckingLongIdData().getMetaData().getLinkedinSr() != null) {
+
+                            linkedinUrl = baseModel.getFuckingLongIdData().getMetaData().getLinkedinSr();
+                        }
+                        if (baseModel.getFuckingLongIdData().getMetaData().getFaceSr() != null) {
+                            faceUrl = baseModel.getFuckingLongIdData().getMetaData().getFaceSr();
+                        }
+                        Drawable profileImage = LoadImageFromWebOperations(faceUrl);
+
+                        setDetailCard(nameStr, bioStr, twiiterUrl, websiteUrl, linkedinUrl, profileImage);
+                        showDetailCard();
 
                     }
 
@@ -628,6 +681,52 @@ public final class FaceActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    private void setDetailCard(String nameStr, String bioStr, final String twiiterUrl, final String websiteUrl, final String linkedinUrl, Drawable profileImage) {
+
+        binding.nameTxt.setText(nameStr);
+        binding.bioTxt.setText(bioStr);
+        binding.twitterbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                goToUrl(twiiterUrl);
+
+            }
+        });
+        binding.wwwBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToUrl(websiteUrl);
+
+            }
+        });
+        binding.linkedinBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                goToUrl(linkedinUrl);
+
+            }
+        });
+        binding.userRetrievedFace.setImageDrawable(profileImage);
+    }
+
+    private void goToUrl(String url) {
+        Uri uriUrl = Uri.parse(url);
+        Intent launchBrowser = new Intent(Intent.ACTION_VIEW, uriUrl);
+        startActivity(launchBrowser);
+    }
+
+    public Drawable LoadImageFromWebOperations(String url) {
+        try {
+            InputStream is = (InputStream) new URL(url).getContent();
+            Drawable d = Drawable.createFromStream(is, "src name");
+            return d;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }
