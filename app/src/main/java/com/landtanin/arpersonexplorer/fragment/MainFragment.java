@@ -8,18 +8,28 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.landtanin.arpersonexplorer.R;
 import com.landtanin.arpersonexplorer.databinding.FragmentMainBinding;
 import com.landtanin.arpersonexplorer.facetracking.FaceActivity;
+import com.landtanin.arpersonexplorer.manager.HttpManager;
+import com.landtanin.arpersonexplorer.model.BaseModel;
 
 import java.io.File;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import pl.aprilapps.easyphotopicker.DefaultCallback;
 import pl.aprilapps.easyphotopicker.EasyImage;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 /**
@@ -29,6 +39,10 @@ public class MainFragment extends Fragment {
 
     FragmentMainBinding b;
     MainFragment mainFragment = this;
+    private static String TAG = "MainFragment";
+
+    Bitmap faceBitmap;
+    File faceImgFile;
 
     // constructor of Fragment must be Default constructor (has no arguments)
     public MainFragment() {
@@ -101,6 +115,36 @@ public class MainFragment extends Fragment {
             }
         });
 
+        b.postImgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                File file = new File(faceImgFile.getPath());
+
+                RequestBody reqFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+                MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), reqFile);
+//                RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "upload_test");
+
+                Call<BaseModel> baseModelCall = HttpManager.getInstance().getService().postImage(body);
+
+                baseModelCall.enqueue(new Callback<BaseModel>() {
+                    @Override
+                    public void onResponse(Call<BaseModel> call, Response<BaseModel> response) {
+                        Log.d(TAG, "onResponse: " + response.body().getFuckingLongIdData().toString());
+//                        Toast.makeText(getContext(), response.body().getFuckingLongIdData().toString(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(Call<BaseModel> call, Throwable t) {
+                        Log.e(TAG, "onFailure: " + t.getMessage());
+                        Toast.makeText(getContext(), t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+            }
+        });
+
     }
 
     @Override
@@ -113,9 +157,11 @@ public class MainFragment extends Fragment {
 
                 if(imageFile.exists()){
 
-                    Bitmap myBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 
-                    b.faceImgView.setImageBitmap(myBitmap);
+                    faceBitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+                    faceImgFile = imageFile;
+
+                    b.faceImgView.setImageBitmap(faceBitmap);
 
                 }
 

@@ -38,14 +38,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -59,7 +63,10 @@ import com.landtanin.arpersonexplorer.R;
 import com.landtanin.arpersonexplorer.ui.camera.CameraSourcePreview;
 import com.landtanin.arpersonexplorer.ui.camera.GraphicOverlay;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 
 
 public final class FaceActivity extends AppCompatActivity {
@@ -74,7 +81,7 @@ public final class FaceActivity extends AppCompatActivity {
   private CameraSourcePreview mPreview;
   private GraphicOverlay mGraphicOverlay;
   private boolean mIsFrontFacing = true;
-
+  private ImageView previewImg;
 
   // Activity event handlers
   // =======================
@@ -89,7 +96,11 @@ public final class FaceActivity extends AppCompatActivity {
     mPreview = (CameraSourcePreview) findViewById(R.id.preview);
     mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
     final ImageButton button = (ImageButton) findViewById(R.id.flipButton);
+    final Button captureBtn = findViewById(R.id.captureBtn);
+
+    previewImg = findViewById(R.id.previewImage);
     button.setOnClickListener(mSwitchCameraButtonListener);
+    captureBtn.setOnClickListener(mCaptureButtonListener);
 
     if (savedInstanceState != null) {
       mIsFrontFacing = savedInstanceState.getBoolean("IsFrontFacing");
@@ -118,6 +129,107 @@ public final class FaceActivity extends AppCompatActivity {
       startCameraSource();
     }
   };
+
+  private View.OnClickListener mCaptureButtonListener = new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+
+      // TODO: capture image and show it to the previewImg
+      Context context = getApplicationContext();
+      MyFaceDetector faceDetector = createFaceDetector(context);
+
+      // crop current photo on the screen
+//      File imageFile = takeScreenshot();
+//      if (imageFile == null) {
+//        return;
+//      }
+//
+//      Uri uri = Uri.fromFile(imageFile);
+//      Bitmap bitmap = null;
+//      try {
+//        bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+//      } catch (IOException e) {
+//        e.printStackTrace();
+//      }
+//
+//      previewImg.setImageBitmap(bitmap);
+      // put it in Bitmap format
+
+      // put it in frame
+
+      // use faceDetector to detect it
+
+//      SparseArray<Face> detectedFaces = faceDetector.detect(faceDetector.frame);
+//      for(int i=0;i<detectedFaces.size();i++){          //can't use for-each loops for SparseArrays
+//        Face face = detectedFaces.valueAt(i);
+//        //get it's coordinates
+//        Bitmap faceBitmap = Bitmap.createBitmap(bitmap, (int) face.getPosition().x, (int) face.getPosition().y, (int) face.getWidth(), (int) face.getHeight());
+//        //Do whatever you want with this cropped Bitmap
+//      }
+
+
+
+//      Resources r = getResources();
+//      int heightInPx = Math.round(TypedValue.applyDimension(
+//              TypedValue.COMPLEX_UNIT_DIP, 100,r.getDisplayMetrics()));
+//
+//      int widthInPx = Math.round(TypedValue.applyDimension(
+//              TypedValue.COMPLEX_UNIT_DIP, 80,r.getDisplayMetrics()));
+//
+////      BitmapFactory.Options options = new BitmapFactory.Options();
+////      options.inMutable=true;
+//      Bitmap myBitmap = Bitmap.createBitmap(heightInPx, widthInPx, Bitmap.Config.RGB_565);
+//
+//      Frame frame = new Frame.Builder().setBitmap(myBitmap).build();
+//      SparseArray<Face> faces = faceDetector.detect(frame);
+
+//      faceDetector.croppedBitMap
+
+//      Frame frame = new Frame.Builder().set
+//      ByteBuffer buf = faceDetector.detect().getGrayscaleImageData();
+//
+//      byte[] imageBytes= new byte[buf.remaining()];
+//      buf.get(imageBytes);
+//      final Bitmap bmp= BitmapFactory.decodeByteArray(imageBytes,0,imageBytes.length);
+
+
+
+    }
+  };
+
+
+
+  private File takeScreenshot() {
+    Date now = new Date();
+    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+
+    try {
+      // image naming and path  to include sd card  appending name you choose for file
+      String mPath = Environment.getExternalStorageDirectory().toString() + "/" + now + ".jpg";
+
+      // create bitmap screen capture
+      View v1 = getWindow().getDecorView().getRootView();
+      v1.setDrawingCacheEnabled(true);
+      Bitmap bitmap = Bitmap.createBitmap(v1.getDrawingCache());
+      v1.setDrawingCacheEnabled(false);
+
+      File imageFile = new File(mPath);
+
+      FileOutputStream outputStream = new FileOutputStream(imageFile);
+      int quality = 100;
+      bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+      outputStream.flush();
+      outputStream.close();
+
+//      openScreenshot(imageFile);
+      return imageFile;
+    } catch (Throwable e) {
+      // Several error may come out with file handling or DOM
+      e.printStackTrace();
+    }
+    return null;
+  }
+
 
   @Override
   protected void onResume() {
@@ -215,7 +327,7 @@ public final class FaceActivity extends AppCompatActivity {
 
     // 1
     Context context = getApplicationContext();
-    FaceDetector detector = createFaceDetector(context);
+    MyFaceDetector detector = createFaceDetector(context);
 
     // 2
     int facing = CameraSource.CAMERA_FACING_FRONT;
@@ -230,6 +342,48 @@ public final class FaceActivity extends AppCompatActivity {
       .setRequestedFps(60.0f)   // Sets the camera frame rate. Higher rates mean better face tracking, but use more processor power.
       .setAutoFocusEnabled(true)
       .build();
+
+
+
+
+//    ByteBuffer mPendingFrameData = detector.frame.getGrayscaleImageData();
+//
+//    Resources r = getResources();
+//    int heightInPx = Math.round(TypedValue.applyDimension(
+//              TypedValue.COMPLEX_UNIT_DIP, 100,r.getDisplayMetrics()));
+//
+//    int widthInPx = Math.round(TypedValue.applyDimension(
+//              TypedValue.COMPLEX_UNIT_DIP, 80,r.getDisplayMetrics()));
+//
+//    Frame outputFrame = new Frame.Builder()
+//            .setImageData(mPendingFrameData, widthInPx,
+//                    heightInPx, ImageFormat.NV21)
+//            .build();
+//
+//    int w = outputFrame.getMetadata().getWidth();
+//    int h = outputFrame.getMetadata().getHeight();
+//    SparseArray<Face> detectedFaces = detector.detect(outputFrame);
+//    Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+//
+//    if (detectedFaces.size() > 0) {
+//      ByteBuffer byteBufferRaw = outputFrame.getGrayscaleImageData();
+//      byte[] byteBuffer = byteBufferRaw.array();
+//      YuvImage yuvimage  = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
+//
+//      Face face = detectedFaces.valueAt(0);
+//      int left = (int) face.getPosition().x;
+//      int top = (int) face.getPosition().y;
+//      int right = (int) face.getWidth() + left;
+//      int bottom = (int) face.getHeight() + top;
+//
+//      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//      yuvimage.compressToJpeg(new Rect(left, top, right, bottom), 80, baos);
+//      byte[] jpegArray = baos.toByteArray();
+//      bitmap = BitmapFactory.decodeByteArray(jpegArray, 0, jpegArray.length);
+//    }
+//
+//    previewImg.setImageBitmap(bitmap);
+
   }
 
   private void startCameraSource() {
@@ -261,7 +415,7 @@ public final class FaceActivity extends AppCompatActivity {
    *  Create the face detector, and check if it's ready for use.
    */
   @NonNull
-  private FaceDetector createFaceDetector(final Context context) {
+  private MyFaceDetector createFaceDetector(final Context context) {
     Log.d(TAG, "createFaceDetector called.");
 
     // 1
@@ -279,6 +433,8 @@ public final class FaceActivity extends AppCompatActivity {
       .setMinFaceSize(mIsFrontFacing ? 0.35f : 0.15f)
       .build();
 
+    MyFaceDetector myFaceDetector = new MyFaceDetector(detector);
+
     // 2
     MultiProcessor.Factory<Face> factory = new MultiProcessor.Factory<Face>() {
       @Override
@@ -290,6 +446,7 @@ public final class FaceActivity extends AppCompatActivity {
     // 3
     Detector.Processor<Face> processor = new MultiProcessor.Builder<>(factory).build();
     detector.setProcessor(processor);
+    myFaceDetector.setProcessor(processor);
 
     // 4
     if (!detector.isOperational()) {
@@ -315,7 +472,7 @@ public final class FaceActivity extends AppCompatActivity {
           .show();
       }
     }
-    return detector;
+    return myFaceDetector;
   }
 
 }

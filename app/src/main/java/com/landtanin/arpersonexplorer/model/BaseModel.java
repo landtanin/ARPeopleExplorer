@@ -9,15 +9,15 @@ import com.google.gson.annotations.SerializedName;
 
 public class BaseModel {
 
-    @SerializedName("b64img")
+    @SerializedName("373357db-bda9-4257-8677-7ca2331a6449")
     @Expose
-    private String b64img;
+    private FuckingLongIdData fuckingLongIdData;
 
-    public String getB64img() {
-        return b64img;
+    public FuckingLongIdData getFuckingLongIdData() {
+        return fuckingLongIdData;
     }
 
-    public void setB64img(String b64img) {
-        this.b64img = b64img;
+    public void setFuckingLongIdData(FuckingLongIdData fuckingLongIdData) {
+        this.fuckingLongIdData = fuckingLongIdData;
     }
 }
